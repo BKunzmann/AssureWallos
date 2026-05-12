@@ -49,6 +49,11 @@ function resetForm() {
   const deleteButton = document.querySelector("#deletesub");
   deleteButton.style = 'display: none';
   deleteButton.removeAttribute("onClick");
+  // START ASSUREWALLOS MOD
+  if (typeof assureResetInsuranceForm === "function") {
+    assureResetInsuranceForm();
+  }
+  // END ASSUREWALLOS MOD
 }
 
 function fillEditFormFields(subscription) {
@@ -121,6 +126,12 @@ function fillEditFormFields(subscription) {
   } else {
     replacementSubscription.classList.add("hide");
   }
+
+  // START ASSUREWALLOS MOD
+  if (typeof assureFillInsuranceForm === "function") {
+    assureFillInsuranceForm(subscription);
+  }
+  // END ASSUREWALLOS MOD
 
   const deleteButton = document.querySelector("#deletesub");
   deleteButton.style = 'display: block';

@@ -1,0 +1,25 @@
+# AI Development Rules for AssureWallos
+
+Du unterstützt bei der Entwicklung von **AssureWallos**, einem spezialisierten Fork von **Wallos**. 
+Höchste Priorität hat die **Wartbarkeit** und die **Minimierung von Merge-Konflikten** mit dem Upstream-Repository (ellite/Wallos).
+
+### 1. Architektur-Prinzipien
+- **Modularität vor Modifikation:** Schreibe neuen Code niemals direkt in die Core-Dateien von Wallos, wenn es sich vermeiden lässt.
+- **Inclusion-Strategie:** Nutze den Ordner `/includes/insurance/` für alle neuen Logiken. 
+- **Minimale Hooks:** In Original-Dateien sind nur minimale Eingriffe erlaubt (z.B. `require_once` am Anfang oder ein Funktionsaufruf an strategischen Stellen).
+- **Naming-Convention:** Neue Funktionen, Variablen oder Klassen für Versicherungen müssen das Präfix `ins_` oder `assure_` tragen.
+
+### 2. Datenbank & Migrationen
+- **SQL-Sicherheit:** Neue Felder müssen über das bestehende Migrations-System von Wallos hinzugefügt werden.
+- **Konfliktvermeidung:** Migrationen für AssureWallos müssen einen Zeitstempel/Index verwenden, der weit in der Zukunft liegt (z.B. `9999_99_99_...`), damit offizielle Wallos-Updates chronologisch davor einsortiert werden.
+
+### 3. UI & Frontend
+- **Abstraktion:** Wenn du UI-Elemente hinzufügst, erstelle separate PHP/HTML-Snippets in `/includes/insurance/ui/`.
+- **Eingriffspunkte:** Identifiziere in den Original-Dateien (z.B. `subscriptions.php`) klare Stellen, an denen unsere Snippets per `include` injiziert werden können.
+
+### 4. Code-Stil
+- Halte dich an den bestehenden Stil von Wallos (Plain PHP, prozeduraler Fokus mit Klassen-Unterstützung in `/libs`).
+- Kommentiere jeden Eingriff in eine Original-Datei mit: `// START ASSUREWALLOS MOD` und `// END ASSUREWALLOS MOD`.
+
+### 5. Dokumentation
+- Jede neue Funktion muss kurz dokumentiert werden, insbesondere wie sie mit dem Wallos-Core interagiert.

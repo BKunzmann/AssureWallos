@@ -2,6 +2,8 @@
 !/db/wallos.empty.db
 /images/uploads/logos/*
 !/images/uploads/logos/wallos.png
+/images/uploads/insurance_docs/*
+!/images/uploads/insurance_docs/.htaccess
 .DS_Store
 .idea/
 .vscode/

@@ -40,6 +40,14 @@ RUN dos2unix /etc/cron.d/cronjobs && \
     echo 'pm.max_children = 15' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     echo 'pm.max_requests = 500' >> /usr/local/etc/php-fpm.d/zz-docker.conf
 
+# START ASSUREWALLOS MOD
+RUN { \
+    echo 'upload_max_filesize = 25M'; \
+    echo 'post_max_size = 30M'; \
+    echo 'memory_limit = 256M'; \
+} > /usr/local/etc/php/conf.d/assurewallos_uploads.ini
+# END ASSUREWALLOS MOD
+
 # Expose port 80 for Nginx
 EXPOSE 80
 

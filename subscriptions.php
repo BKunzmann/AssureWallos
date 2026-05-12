@@ -499,6 +499,13 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
       </select>
     </div>
 
+    <?php
+    // START ASSUREWALLOS MOD
+    include __DIR__ . '/includes/insurance/ui/form_fields.php';
+    include __DIR__ . '/includes/insurance/ui/documents_section.php';
+    // END ASSUREWALLOS MOD
+    ?>
+
     <div class="buttons">
       <input type="button" value="<?= translate('delete', $i18n) ?>" class="warning-button left thin" id="deletesub"
         style="display: none">
@@ -509,6 +516,9 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
   </form>
 </section>
 <script src="scripts/subscriptions.js?<?= $version ?>"></script>
+<!-- START ASSUREWALLOS MOD -->
+<script src="scripts/insurance/form_toggle.js?<?= $version ?>"></script>
+<!-- END ASSUREWALLOS MOD -->
 <?php
 if (isset($_GET['add'])) {
   ?>

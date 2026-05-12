@@ -1,5 +1,8 @@
 <?php
 require_once '../../includes/connect_endpoint.php';
+// START ASSUREWALLOS MOD
+require_once '../../includes/insurance/hooks/after_load.php';
+// END ASSUREWALLOS MOD
 
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     if (isset($_GET['id']) && $_GET['id'] != "") {
@@ -33,6 +36,12 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             $subscriptionData['notify_days_before'] = $row['notify_days_before'];
             $subscriptionData['cancellation_date'] = $row['cancellation_date'];
             $subscriptionData['replacement_subscription_id'] = $row['replacement_subscription_id'];
+            // START ASSUREWALLOS MOD
+            $subscriptionData = array_merge(
+                $subscriptionData,
+                assure_load_subscription_insurance($db, $subscriptionId, (int) $userId)
+            );
+            // END ASSUREWALLOS MOD
 
             $subscriptionJson = json_encode($subscriptionData);
             header('Content-Type: application/json');

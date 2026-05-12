@@ -5,6 +5,9 @@ require_once '../../includes/validate_endpoint.php';
 require_once '../../includes/inputvalidation.php';
 require_once '../../includes/getsettings.php';
 require_once '../../includes/ssrf_helper.php';
+// START ASSUREWALLOS MOD
+require_once '../../includes/insurance/hooks/after_save.php';
+// END ASSUREWALLOS MOD
 
 if (!file_exists('../../images/uploads/logos')) {
     mkdir('../../images/uploads/logos', 0777, true);
@@ -339,6 +342,15 @@ if ($stmt->execute()) {
     $success['status'] = "Success";
     $text = $isEdit ? "updated" : "added";
     $success['message'] = translate('subscription_' . $text . '_successfuly', $i18n);
+    // START ASSUREWALLOS MOD
+    assure_after_subscription_save(
+        $db,
+        $isEdit ? (int) $id : (int) $db->lastInsertRowID(),
+        (int) $userId,
+        $_POST,
+        $_FILES
+    );
+    // END ASSUREWALLOS MOD
     if ($logoError !== "") {
         $success['logo_warning'] = $logoError;
     }
