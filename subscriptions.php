@@ -414,9 +414,31 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
       </div>
     </div>
 
+    <?php
+    // START ASSUREWALLOS MOD
+    // Kategorie-ID für „Versicherung“ (Name oder Standard-ID 11), damit JS mit #is_insurance synchronisieren kann.
+    $assure_insurance_category_id = null;
+    foreach ($categories as $cid => $category) {
+      $nm = strtolower(trim((string) ($category['name'] ?? '')));
+      if ($nm === 'insurance' || $nm === 'versicherung' || $nm === 'versicherungen' || $nm === 'assurance') {
+        $assure_insurance_category_id = (int) $cid;
+        break;
+      }
+    }
+    if ($assure_insurance_category_id === null && isset($categories[11])) {
+      $assure_insurance_category_id = 11;
+    }
+    // END ASSUREWALLOS MOD
+    ?>
     <div class="form-group">
       <label for="category"><?= translate('category', $i18n) ?></label>
-      <select id="category" name="category_id">
+      <select id="category" name="category_id"<?php
+      // START ASSUREWALLOS MOD
+      if ($assure_insurance_category_id !== null) {
+        echo ' data-assure-insurance-category-id="' . htmlspecialchars((string) $assure_insurance_category_id, ENT_QUOTES, 'UTF-8') . '"';
+      }
+      // END ASSUREWALLOS MOD
+      ?>>
         <?php
         foreach ($categories as $category) {
           ?>
@@ -501,6 +523,7 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
 
     <?php
     // START ASSUREWALLOS MOD
+    include __DIR__ . '/includes/insurance/ui/toggle.php';
     include __DIR__ . '/includes/insurance/ui/form_fields.php';
     include __DIR__ . '/includes/insurance/ui/documents_section.php';
     // END ASSUREWALLOS MOD

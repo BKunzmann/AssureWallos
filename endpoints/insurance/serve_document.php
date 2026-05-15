@@ -27,5 +27,3 @@ readfile($document['path']);
 
 $db->close();
 exit;
-
-?>

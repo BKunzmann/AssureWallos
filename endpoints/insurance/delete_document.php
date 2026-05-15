@@ -2,6 +2,8 @@
 
 require_once '../../includes/connect_endpoint.php';
 require_once '../../includes/validate_endpoint.php';
+require_once '../../includes/insurance/ins_endpoint_json.php';
+ins_send_json_headers();
 require_once '../../includes/insurance/ins_repository.php';
 
 $documentId = intval($_POST['id'] ?? 0);
@@ -22,5 +24,3 @@ echo json_encode([
 ]);
 
 $db->close();
-
-?>

@@ -1,6 +1,8 @@
 <?php
 
-$databaseFile = '../../db/wallos.db';
+// START ASSUREWALLOS MOD — DB- und i18n-Pfade relativ zu dieser Datei (PHP-FPM-CWD ist nicht zuverlässig).
+$databaseFile = __DIR__ . '/../db/wallos.db';
+// END ASSUREWALLOS MOD
 $db = new SQLite3($databaseFile);
 $db->busyTimeout(5000);
 
@@ -8,9 +10,11 @@ if (!$db) {
     die('Connection to the database failed.');
 }
 
-require_once 'i18n/languages.php';
-require_once 'i18n/getlang.php';
-require_once 'i18n/' . $lang . '.php';
+// START ASSUREWALLOS MOD
+require_once __DIR__ . '/i18n/languages.php';
+require_once __DIR__ . '/i18n/getlang.php';
+require_once __DIR__ . '/i18n/' . $lang . '.php';
+// END ASSUREWALLOS MOD
 
 $secondsInMonth = 30 * 24 * 60 * 60;
 if (session_status() === PHP_SESSION_NONE) {
@@ -27,5 +31,3 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 } else {
     $userId = 0;
 }
-
-?>

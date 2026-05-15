@@ -1462,6 +1462,13 @@ $userData['currency_symbol'] = $currencies[$main_currency]['symbol'];
         </div>
     </section>
 
+
+    <?php
+    // START ASSUREWALLOS MOD
+    include __DIR__ . '/includes/insurance/ui/settings_taxonomy.php';
+    // END ASSUREWALLOS MOD
+    ?>
+
     <section class="account-section">
         <header>
             <h2><?= translate('experimental_settings', $i18n) ?></h2>
@@ -1487,6 +1494,9 @@ $userData['currency_symbol'] = $currencies[$main_currency]['symbol'];
 <script src="scripts/settings.js?<?= $version ?>"></script>
 <script src="scripts/theme.js?<?= $version ?>"></script>
 <script src="scripts/notifications.js?<?= $version ?>"></script>
+<!-- START ASSUREWALLOS MOD -->
+<script src="scripts/insurance/settings_taxonomy.js?<?= $version ?>"></script>
+<!-- END ASSUREWALLOS MOD -->
 
 <?php
 require_once 'includes/footer.php';

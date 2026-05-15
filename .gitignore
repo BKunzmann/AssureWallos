@@ -1,3 +1,6 @@
+# AssureWallos: lokale Prüfsumme für scripts/assure-stack-restart.sh (ob --build nötig ist)
+.cache/
+
 /db/*
 !/db/wallos.empty.db
 /images/uploads/logos/*

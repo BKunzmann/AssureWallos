@@ -57,5 +57,7 @@ ENTRYPOINT ["dumb-init", "--"]
 HEALTHCHECK --interval=2m --timeout=2s --start-period=20s --start-interval=5s --retries=3 \
     CMD ["curl", "-fsS", "http://127.0.0.1/health.php"]
 
-# Start both PHP-FPM, Nginx
-CMD ["/var/www/html/startup.sh"]
+# Start both PHP-FPM, Nginx (via sh: Bind-Mount vom Host behält oft kein +x auf startup.sh)
+# START ASSUREWALLOS MOD
+CMD ["sh", "/var/www/html/startup.sh"]
+# END ASSUREWALLOS MOD

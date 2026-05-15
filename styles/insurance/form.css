@@ -1,0 +1,338 @@
+/* AssureWallos subscription and settings additions. Scope stays under assure-* classes to avoid Wallos core style drift. */
+.assure-section {
+  border-top: 1px solid var(--input-border-color);
+  padding-top: 16px;
+}
+
+.assure-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+
+.assure-section-heading h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.assure-label-with-help {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.assure-help {
+  color: var(--main-color);
+  cursor: help;
+  font-size: 14px;
+}
+
+.assure-field-note,
+.assure-currency-hint {
+  display: block;
+  color: #777;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.assure-field-note {
+  margin: 0 0 15px;
+}
+
+.assure-currency-hint {
+  margin-top: 5px;
+}
+
+.assure-section textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.assure-link-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.assure-link-field input {
+  flex: 1;
+}
+
+.assure-link-field a {
+  white-space: nowrap;
+  color: var(--main-color);
+}
+
+.assure-link-field a.hide {
+  display: none;
+}
+
+/* Wie Wallos .account-settings-list: vertikaler Rhythmus per gap, Überschriften ohne Zusatzmargen */
+.account-currencies.assure-insurance-taxonomy {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.assure-insurance-taxonomy h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+#assure-settings-groups,
+#assure-settings-types {
+  margin-bottom: 0;
+  /* Eine Zeile wie Wallos-Währungen; bei wenig Platz horizontal scrollen statt „Chaos-Wrap“ */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.assure-insurance-taxonomy .form-group-inline {
+  margin-bottom: 8px;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Globales input { width:100% } bricht Flex-Zeilen ohne feste Flex-Basis */
+.assure-insurance-taxonomy .form-group-inline > input[name="name"] {
+  flex: 1 1 160px;
+  min-width: 0;
+  width: auto;
+}
+
+.assure-insurance-taxonomy .form-group-inline > select.thin {
+  flex: 0 1 200px;
+  min-width: 140px;
+  max-width: 280px;
+  width: auto;
+}
+
+.assure-insurance-taxonomy .form-group-inline > .image-button.medium {
+  flex: 0 0 auto;
+}
+
+.assure-taxonomy-group-select {
+  min-width: 140px;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .assure-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .assure-link-field {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  /* Taxonomie-Zeilen bleiben eine Zeile + horizontaler Scroll — besser lesbar als gestapelte Felder */
+  .assure-insurance-taxonomy .form-group-inline {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+}
+
+/* Abo-Modal (Wallos .subscription-form): Versicherungsblock — Abstände wie Abschnittsüberschriften h3 */
+.subscription-form .assure-insurance-toggle-wrap {
+  margin-top: 4px;
+}
+
+.subscription-form .assure-section-heading {
+  margin-top: 22px;
+  margin-bottom: 0;
+}
+
+.subscription-form .assure-section:first-of-type .assure-section-heading {
+  margin-top: 6px;
+}
+
+.subscription-form .assure-section-heading h4 {
+  margin: 0 0 14px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--main-color);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.subscription-form .assure-section .assure-field-note {
+  margin-top: 4px;
+  margin-bottom: 18px;
+}
+
+/*
+ * Mehrere .inline-Zeilen in einem assure-.form-group: Wallos trennt solche Zeilen oft durch
+ * eigene .form-group (je margin-bottom: 20px). Ohne Abstand wirken die nächsten Labels
+ * „auf“ den Inputs der Zeile darüber; align-items:center verstärkt das noch.
+ */
+.subscription-form .form-group.assure-section > .inline {
+  align-items: flex-start;
+}
+
+.subscription-form .form-group.assure-section > .inline + .inline {
+  margin-top: 20px;
+}
+
+.subscription-form .form-group.assure-section > .inline + .assure-label-with-help,
+.subscription-form .form-group.assure-section > .inline + label:not(.grow) {
+  margin-top: 20px;
+}
+
+.subscription-form .form-group.assure-section textarea + label {
+  display: block;
+  margin-top: 18px;
+}
+
+.subscription-form .form-group.assure-section > .assure-link-field + label {
+  display: block;
+  margin-top: 16px;
+}
+
+.subscription-form .assure-section .inline .split50 > label,
+.subscription-form .assure-section .inline .split33 > label {
+  margin-bottom: 12px;
+}
+
+.subscription-form .assure-section .assure-label-with-help {
+  margin-bottom: 12px;
+}
+
+.subscription-form #subs-form > .buttons {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 20px;
+  padding-top: 14px;
+  padding-bottom: 6px;
+  background: var(--box-background-color);
+  box-shadow: 0 -8px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Versicherungsdokumente: vertikaler Rhythmus wie .account-settings-list (flex + gap, keine harten Pixel außerhalb Wallos-Variablen) */
+.subscription-form #assure-insurance-documents .assure-document-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.subscription-form #assure-insurance-documents .assure-document-stack > .inline {
+  align-items: flex-start;
+}
+
+/* Upload-Zeile: gleiches Raster wie .assure-document-row (Datei links wachsend, Aktionen rechts bündig mit Mülleimer-Spalte) */
+.subscription-form .assure-document-upload-row.form-group-inline {
+  margin-bottom: 0;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+  width: 100%;
+}
+
+.subscription-form .assure-document-file-input-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.subscription-form .assure-document-file-input-wrap input[type="file"] {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.subscription-form .assure-document-upload-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  min-width: 32px;
+}
+
+.subscription-form .assure-document-upload-status {
+  font-size: 13px;
+  line-height: 1.3;
+  color: #777;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.subscription-form #assure-insurance-documents .assure-document-stack-block > label {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.subscription-form .assure-document-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Dokumentzeilen: Wallos .form-group-inline + .image-button.medium (Mülleimer wie in den Einstellungen) */
+.subscription-form .assure-document-row.form-group-inline {
+  margin-bottom: 0;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
+.subscription-form .assure-document-type-pill {
+  flex: 0 0 auto;
+  font-size: 13px;
+  line-height: 1.3;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--main-color);
+  border: 1px solid var(--input-border-color);
+  background: var(--box-background-color);
+  white-space: nowrap;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subscription-form .assure-document-download {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--main-color);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subscription-form .assure-document-download:hover {
+  text-decoration: underline;
+  color: var(--hover-color);
+}
+
+.subscription-form .assure-document-row .image-button.medium {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 768px) {
+  .subscription-form .assure-document-row.form-group-inline,
+  .subscription-form .assure-document-upload-row.form-group-inline {
+    flex-wrap: wrap;
+  }
+
+  .subscription-form .assure-document-upload-toolbar {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .subscription-form .assure-document-type-pill {
+    max-width: 100%;
+  }
+}

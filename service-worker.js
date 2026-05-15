@@ -1,5 +1,5 @@
-const STATIC_CACHE = 'static-cache-v1';
-const PAGES_CACHE = 'pages-cache-v1';
+const STATIC_CACHE = 'static-cache-v3';
+const PAGES_CACHE = 'pages-cache-v3';
 const LOGOS_CACHE = 'logos-cache-v1';
 
 const staticAssets = [
@@ -202,6 +202,17 @@ self.addEventListener('fetch', function (event) {
 
     // Never intercept non-GET requests (POST, etc.)
     if (request.method !== 'GET') return;
+
+    // START ASSUREWALLOS MOD — Insurance-Assets nicht vom SW abfangen (Browser-Standard-Fetch, kein PAGES-Cache).
+    // Kein respondWith: vermeidet in manchen Browsern hängende oder leere Antworten bei fetch() im SW.
+    if (
+        url.pathname.includes('/scripts/insurance/') ||
+        url.pathname.includes('/styles/insurance/') ||
+        url.pathname.includes('/endpoints/insurance/')
+    ) {
+        return;
+    }
+    // END ASSUREWALLOS MOD
 
     // Logo images: cache-first, populate on first load
     if (url.pathname.includes('images/uploads/logos')) {

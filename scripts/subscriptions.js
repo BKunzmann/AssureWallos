@@ -520,6 +520,12 @@ document.addEventListener('DOMContentLoaded', function () {
   subscriptionForm.addEventListener("submit", function (e) {
     e.preventDefault();
 
+    // START ASSUREWALLOS MOD
+    if (typeof window.assurePrepareInsuranceForSubmit === "function") {
+      window.assurePrepareInsuranceForSubmit();
+    }
+    // END ASSUREWALLOS MOD
+
     submitButton.disabled = true;
     const formData = new FormData(subscriptionForm);
 

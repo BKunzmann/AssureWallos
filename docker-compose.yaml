@@ -1,13 +1,34 @@
+# AssureWallos: baut das Image aus diesem Repository (Dockerfile) und startet Wallos
+# inkl. aller AssureWallos-Änderungen. Daten bleiben in gebundenen Host-Ordnern erhalten.
+#
+# Entwicklung ohne Rebuild: Quellcode wird per Bind-Mount nach /var/www/html gespiegelt.
+# Spezifischere Volumes (db, logos, …) liegen danach und überschreiben nur diese Pfade.
+# Empfohlen: ./scripts/assure-stack-restart.sh  (wählt automatisch up -d oder --build)
+# Manuell:    docker compose up -d   bzw.   docker compose up -d --build
+# Logs:      docker compose logs -f
+# Stopp:     docker compose down
+#
+# Nach Service-Worker-Updates ggf. einmal hart neu laden oder SW unter Entwicklertools entfernen.
+#
+# App:    http://localhost:8282/
 services:
   wallos:
-    container_name: wallos
-    image: bellamy/wallos:latest
+    container_name: assurewallos
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: assurewallos:local
     ports:
       - "8282:80/tcp"
     environment:
-      TZ: 'America/Toronto'
-    # Volumes store your data between container upgrades
+      TZ: Europe/Berlin
+      # Optional: Host-User/Gruppe für Schreibrechte in gemounteten Ordnern (Standard im Image: 82)
+      PUID: "1000"
+      PGID: "1000"
     volumes:
-      - './db:/var/www/html/db'
-      - './logos:/var/www/html/images/uploads/logos'
+      - .:/var/www/html
+      - ./db:/var/www/html/db
+      - ./logos:/var/www/html/images/uploads/logos
+      # AssureWallos: Versicherungsdokumente außerhalb des Images, persistent
+      - ./images/uploads/insurance_docs:/var/www/html/images/uploads/insurance_docs
     restart: unless-stopped
