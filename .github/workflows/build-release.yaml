@@ -1,11 +1,13 @@
 name: Build & Release
+# START ASSUREWALLOS MOD — Upstream-Wallos-Release; AssureWallos nutzt assurewallos-docker.yaml
 on:
   push:
     branches:
-      - "*"
+      - main
   pull_request:
     branches:
       - main
+# END ASSUREWALLOS MOD
 permissions:
   contents: write
   pull-requests: write

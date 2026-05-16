@@ -1,0 +1,23 @@
+# AssureWallos aus Docker Hub (ohne lokalen Build).
+# Image: https://hub.docker.com/r/bkunzmann/assurewallos
+#
+# Release-Tag (empfohlen):  docker compose -f docker-compose.hub.yaml pull && docker compose -f docker-compose.hub.yaml up -d
+# Entwicklungs-Stand Branch:  image: bkunzmann/assurewallos:feature-insurance-core
+#
+# Daten persistent auf dem Host (wie docker-compose.yaml).
+
+services:
+  wallos:
+    container_name: assurewallos
+    image: bkunzmann/assurewallos:0.1.2
+    ports:
+      - "8282:80/tcp"
+    environment:
+      TZ: Europe/Berlin
+      PUID: "1000"
+      PGID: "1000"
+    volumes:
+      - ./db:/var/www/html/db
+      - ./logos:/var/www/html/images/uploads/logos
+      - ./images/uploads/insurance_docs:/var/www/html/images/uploads/insurance_docs
+    restart: unless-stopped

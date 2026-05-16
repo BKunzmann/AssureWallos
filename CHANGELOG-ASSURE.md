@@ -9,6 +9,7 @@ Die Wallos-Basisversion steht in `includes/version.php` und wird bei Upstream-Me
 
 - Logo: „Assure“ oben links über dem originalen Wallos-SVG (`logo_inner.php`, `brand.css`).
 - Phase 2: `manifest.json` (AssureWallos), E-Mail-Branding (`assure_mail_brand.php`).
+- Docker Hub CI (`assurewallos-docker.yaml`), `docker-compose.hub.yaml`, Release-Skript `scripts/docker-release-tag.sh`.
 
 ## [0.1.1] - 2026-05-16
 

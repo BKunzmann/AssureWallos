@@ -34,7 +34,15 @@ Höchste Priorität hat die **Wartbarkeit** und die **Minimierung von Merge-Konf
 - **SemVer AssureWallos:** `0.x` = Vor-1.0; Minor = neue Features/Migrationen; Patch = Fixes ohne Breaking Changes; `1.0.0` = stabile Nutzer-API/DB.
 - **API:** `api/status/version.php` liefert zusätzlich `assure_version`, `assure_version_number`, `assure_display` — bei Erweiterungen kompatibel halten.
 
-### 8. Git & Commits
+### 8. Release & Docker Hub
+- **Entwicklungs-Branch:** `feature/insurance-core` — Fork und Releases laufen von hier, nicht von `main`.
+- **Images:** `docker.io/bkunzmann/assurewallos` (https://hub.docker.com/r/bkunzmann/assurewallos).
+- **CI:** `.github/workflows/assurewallos-docker.yaml` — Push auf `feature/insurance-core` → Tags `:feature-insurance-core`, `:sha-…`; Git-Tag `vX.Y.Z` → `:X.Y.Z`, `:X.Y`, optional `:latest`.
+- **Secrets (GitHub Repo):** `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` (Access Token mit Read/Write).
+- **Release-Ablauf:** `$assure_version` + `CHANGELOG-ASSURE.md` anpassen → committen → `./scripts/docker-release-tag.sh X.Y.Z` → `git push origin vX.Y.Z` (löst Build aus). Produktion: `docker-compose.hub.yaml`.
+- **Upstream:** `.github/workflows/build-release.yaml` nur noch für `main` (Wallos), nicht für Assure-Releases.
+
+### 9. Git & Commits
 - **Sammel-Commits:** Änderungen im Working Tree **sammeln**; **keinen** Commit nach jedem kleinen Schritt, es sei denn der Nutzer verlangt es ausdrücklich.
 - **Kein proaktives Committen/Pushen:** Commits und Push nur auf **explizite** Anweisung des Nutzers.
 - **Commit-Inhalt:** Ein Commit = zusammengehöriger logischer Block (z. B. „Branding Phase 1+2“, „Insurance-Taxonomie“), nicht „CSS-Zeile 42“.
