@@ -1,5 +1,6 @@
 # AssureWallos: Images nach Docker Hub (bkunzmann/assurewallos).
-# Branch: feature/insurance-core | Release: Git-Tag v* (z. B. v0.1.2)
+# Auslöser: Git-Tag vX.Y.Z (Release) oder manuell (workflow_dispatch).
+# Kein Build bei jedem Branch-Push — spart CI-Minuten und Docker-Hub-Limits.
 #
 # Secrets (Repo → Settings → Secrets and variables → Actions):
 #   DOCKERHUB_USERNAME  (z. B. bkunzmann)
@@ -8,16 +9,18 @@ name: AssureWallos Docker
 
 on:
   push:
-    branches:
-      - feature/insurance-core
     tags:
       - "v*"
   workflow_dispatch:
     inputs:
       tag_latest:
-        description: "Zusätzlich :latest setzen (empfohlen bei Release-Tags)"
+        description: "Zusätzlich :latest setzen (nur bei Release-Tags sinnvoll)"
         type: boolean
-        default: true
+        default: false
+
+concurrency:
+  group: assurewallos-docker-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -57,9 +60,9 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=feature-insurance-core,enable=${{ github.ref == 'refs/heads/feature/insurance-core' }}
-            type=sha,prefix=sha-,enable=${{ github.ref == 'refs/heads/feature/insurance-core' }}
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && (github.event_name != 'workflow_dispatch' || github.event.inputs.tag_latest != 'false') }}
+            type=sha,prefix=sha-,enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=manual,enable=${{ github.event_name == 'workflow_dispatch' && github.ref_type != 'tag' }}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && (github.event_name != 'workflow_dispatch' || inputs.tag_latest == 'true') }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4

@@ -9,6 +9,7 @@ Die Wallos-Basisversion steht in `includes/version.php` und wird bei Upstream-Me
 
 - README: AssureWallos-Installation (Docker Hub), Entwicklung, Release-Checkliste; Verweis auf Wallos-Upstream.
 - `docker-compose.hub.yaml`: Standard-Host-Port **8283** (Parallelbetrieb mit Wallos auf 8282).
+- CI Docker Hub: Build nur noch bei Git-Tag `v*` oder `workflow_dispatch`, nicht bei jedem Branch-Push.
 
 ### Added
 

@@ -67,8 +67,8 @@ For **end users** who only need a running instance (no local build):
 | Setting | Value |
 |--------|--------|
 | Image | `bkunzmann/assurewallos:0.1.2` (Docker tag **without** `v`; Git release tag is `v0.1.2`) |
-| Branch preview | `bkunzmann/assurewallos:feature-insurance-core` |
 | Hub | https://hub.docker.com/r/bkunzmann/assurewallos |
+| Manual CI build | GitHub Actions → „AssureWallos Docker“ → Run workflow (tags `:manual`, `:sha-…`) |
 
 **Update:** bump the `image:` version in `docker-compose.hub.yaml`, then `pull` and `up -d` again. Run migrations in the browser if prompted: `http://your-host:8283/endpoints/db/migrate.php`.
 
@@ -105,9 +105,9 @@ Open the app URL in a browser. On first run, create the admin user, then configu
    git push origin vX.Y.Z
    ```
 
-5. GitHub Actions (`.github/workflows/assurewallos-docker.yaml`) needs secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token with Read & Write).
+5. Push the tag: `git push origin vX.Y.Z` — triggers CI (`.github/workflows/assurewallos-docker.yaml`). Secrets: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` (Docker Hub access token with Read & Write).
 
-Published image tags follow the Git tag: `v0.1.2` → Docker tags `0.1.2`, `0.1`, and optionally `latest`.
+Published image tags follow the Git tag: `v0.1.2` → Docker tags `0.1.2`, `0.1`, and optionally `latest`. Branch pushes alone do **not** build images; use `workflow_dispatch` for ad-hoc builds.
 
 ## Based on Wallos
 

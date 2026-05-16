@@ -2,7 +2,7 @@
 # Image: https://hub.docker.com/r/bkunzmann/assurewallos
 #
 # Release-Tag (empfohlen):  docker compose -f docker-compose.hub.yaml pull && docker compose -f docker-compose.hub.yaml up -d
-# Entwicklungs-Stand Branch:  image: bkunzmann/assurewallos:feature-insurance-core
+# Ad-hoc-Build (GitHub Actions → Run workflow):  image: bkunzmann/assurewallos:manual
 #
 # Port 8283: Standard, damit parallel laufendes Wallos (oft 8282) nicht kollidiert.
 # Nur AssureWallos? Port auf "8282:80/tcp" ändern, falls gewünscht.
