@@ -14,6 +14,9 @@ require_once 'i18n/' . $lang . '.php';
 require_once 'getsettings.php';
 
 require_once 'version.php';
+// START ASSUREWALLOS MOD
+require_once __DIR__ . '/insurance/assure_brand.php';
+// END ASSUREWALLOS MOD
 
 if ($userCount == 0) {
   $db->close();
@@ -83,8 +86,11 @@ $mobileNavigation = $settings['mobile_nav'] ? "mobile-navigation" : "";
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Wallos - Subscription Tracker</title>
-  <meta name="apple-mobile-web-app-title" content="Wallos">
+  <?php
+  // START ASSUREWALLOS MOD
+  include __DIR__ . '/insurance/ui/head_brand.php';
+  // END ASSUREWALLOS MOD
+  ?>
   <meta name="theme-color" content="<?= $theme == "light" ? "#FFFFFF" : "#222222" ?>" id="theme-color" />
   <meta name="referrer" content="no-referrer">
   <link rel="icon" type="image/png" href="images/icon/favicon.ico" sizes="16x16">
@@ -166,8 +172,12 @@ $mobileNavigation = $settings['mobile_nav'] ? "mobile-navigation" : "";
     <div class="contain">
       <div class="logo">
         <a href=".">
-          <div class="logo-image" title="Wallos - Subscription Tracker">
-            <?php include "images/siteicons/svg/logo.php"; ?>
+          <div class="logo-image" title="<?= assure_logo_title_attr($i18n) ?>">
+            <?php
+            // START ASSUREWALLOS MOD
+            include __DIR__ . '/insurance/ui/logo_inner.php';
+            // END ASSUREWALLOS MOD
+            ?>
           </div>
         </a>
       </div>

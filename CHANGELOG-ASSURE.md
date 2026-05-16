@@ -3,6 +3,20 @@
 Versionsnummern folgen [Semantic Versioning](https://semver.org/) für **AssureWallos** nur.
 Die Wallos-Basisversion steht in `includes/version.php` und wird bei Upstream-Merges angepasst.
 
+## [0.1.2] - 2026-05-16
+
+### Added
+
+- Logo: „Assure“ oben links über dem originalen Wallos-SVG (`logo_inner.php`, `brand.css`).
+- Phase 2: `manifest.json` (AssureWallos), E-Mail-Branding (`assure_mail_brand.php`).
+
+## [0.1.1] - 2026-05-16
+
+### Added
+
+- Branding Phase 1: `assure_brand.php`, AssureWallos-Logo (SVG), Titel/Logo in Header und Auth-Seiten.
+- About-Seite: AssureWallos- und Wallos-Upstream-Abschnitte getrennt.
+
 ## [0.1.0] - 2026-05-16
 
 ### Added

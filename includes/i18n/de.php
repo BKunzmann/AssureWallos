@@ -396,6 +396,11 @@ $i18n = [
     "latest_version" => "Neueste Version",
     "on_current_version" => "Sie verwenden die neueste Version von Wallos.",
     "assurewallos_issues" => "AssureWallos: Issues & Anfragen",
+    "assure_app_tagline" => "Versicherungen & Abonnements",
+    "assurewallos_upstream" => "Basiert auf Wallos (Upstream)",
+    "assurewallos_upstream_author" => "Wallos-Autor",
+    "assurewallos_wallos_issues" => "Wallos-Upstream-Issues",
+    "assure_upstream_update_available" => "Neue Upstream-Version von Wallos verfügbar",
     "show_update_notification" => "Benachrichtigung über Updates auf dem Dashboard anzeigen",
     "cronjobs" => "Cronjobs",
     // Email Verification

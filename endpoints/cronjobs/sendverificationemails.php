@@ -5,6 +5,9 @@ use PHPMailer\PHPMailer\Exception;
 
 require_once 'validate.php';
 require_once __DIR__ . '/../../includes/connect_endpoint_crontabs.php';
+// START ASSUREWALLOS MOD
+require_once __DIR__ . '/../../includes/insurance/assure_mail_brand.php';
+// END ASSUREWALLOS MOD
 
 require 'settimezone.php';
 
@@ -63,12 +66,14 @@ if ($rows) {
             foreach ($rows as $user) {
                 $mail->addAddress($user['email']);
                 $mail->isHTML(true);
-                $mail->Subject = 'Wallos - Email Verification';
-                $mail->Body = '<img src="' . $server_url . '/images/siteicons/wallos.png" alt="Logo" />
+                // START ASSUREWALLOS MOD
+                $mail->Subject = assure_mail_subject('Email Verification');
+                $mail->Body = assure_mail_logo_html($server_url) . '
                     <br>
-                    Registration on Wallos was successful.
+                    Registration on ' . assure_app_name() . ' was successful.
                     <br>
                     Please click the following link to verify your email: <a href="' . $server_url . '/verifyemail.php?email=' . $user['email'] . '&token=' . $user['token'] . '">Verify Email</a>';
+                // END ASSUREWALLOS MOD
 
                 $mail->send();
 

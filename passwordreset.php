@@ -8,6 +8,9 @@ require_once 'includes/i18n/getlang.php';
 require_once 'includes/i18n/' . $lang . '.php';
 
 require_once 'includes/version.php';
+// START ASSUREWALLOS MOD
+require_once __DIR__ . '/includes/insurance/assure_brand.php';
+// END ASSUREWALLOS MOD
 
 $secondsInMonth = 30 * 24 * 60 * 60;
 if (session_status() === PHP_SESSION_NONE) {
@@ -140,8 +143,11 @@ if (isset($_POST['password']) && $_POST['password'] != "" && isset($_POST['confi
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="<?= $theme == "light" ? "#FFFFFF" : "#222222" ?>" />
-    <meta name="apple-mobile-web-app-title" content="Wallos">
-    <title>Wallos - Subscription Tracker</title>
+    <?php
+    // START ASSUREWALLOS MOD
+    include __DIR__ . '/includes/insurance/ui/head_brand.php';
+    // END ASSUREWALLOS MOD
+    ?>
     <link rel="icon" type="image/png" href="images/icon/favicon.ico" sizes="16x16">
     <link rel="apple-touch-icon" href="images/icon/apple-touch-icon.png">
     <link rel="apple-touch-icon" sizes="152x152" href="images/icon/apple-touch-icon-152.png">
@@ -162,9 +168,11 @@ if (isset($_POST['password']) && $_POST['password'] != "" && isset($_POST['confi
     <div class="content">
         <section class="container">
             <header>
-                <div class="logo-image" title="Wallos - Subscription Tracker">
-                    <?php include "images/siteicons/svg/logo.php"; ?>
-                </div>
+                <?php
+                // START ASSUREWALLOS MOD
+                include __DIR__ . '/includes/insurance/ui/logo_block.php';
+                // END ASSUREWALLOS MOD
+                ?>
                 <p>
                     <?= translate('reset_password', $i18n) ?>
                 </p>

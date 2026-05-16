@@ -17,4 +17,5 @@ Keep future insurance logic in this directory and expose it through small `assur
 - AssureWallos release: `assure_version.php` (`$assure_version`, SemVer).
 - Wallos upstream: `includes/version.php` (only bump on merge from ellite/Wallos).
 - Changelog: `CHANGELOG-ASSURE.md` at repo root.
-- About page: `ui/about_version.php` (included from `about.php`).
+- About page: `ui/about_assure.php`, `ui/about_upstream.php` (included from `about.php`).
+- Branding: `assure_brand.php`, `assure_mail_brand.php`, `ui/head_brand.php`, `ui/logo_inner.php` (Assure-Label + Wallos-SVG), `styles/insurance/brand.css`.

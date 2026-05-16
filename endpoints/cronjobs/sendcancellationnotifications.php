@@ -5,6 +5,9 @@ use PHPMailer\PHPMailer\Exception;
 
 require_once 'validate.php';
 require_once __DIR__ . '/../../includes/connect_endpoint_crontabs.php';
+// START ASSUREWALLOS MOD
+require_once __DIR__ . '/../../includes/insurance/assure_mail_brand.php';
+// END ASSUREWALLOS MOD
 require_once __DIR__ . '/../../includes/ssrf_helper.php';
 
 require __DIR__ . '/../../libs/PHPMailer/PHPMailer.php';
@@ -244,7 +247,9 @@ while ($userToNotify = $usersToNotify->fetchArray(SQLITE3_ASSOC)) {
                     $emailaddress = !empty($user['email']) ? $user['email'] : $defaultEmail;
                     $name = !empty($user['name']) ? $user['name'] : $defaultName;
 
-                    $mail->setFrom($email['fromEmail'], 'Wallos App');
+                    // START ASSUREWALLOS MOD
+                    $mail->setFrom($email['fromEmail'], assure_mail_from_name());
+                    // END ASSUREWALLOS MOD
                     $mail->addAddress($emailaddress, $name);
 
                     if (!empty($email['otherEmails'])) {
@@ -261,7 +266,9 @@ while ($userToNotify = $usersToNotify->fetchArray(SQLITE3_ASSOC)) {
                         }
                     }
 
-                    $mail->Subject = 'Wallos Cancellation Notification';
+                    // START ASSUREWALLOS MOD
+                    $mail->Subject = assure_mail_subject('Cancellation Notification');
+                    // END ASSUREWALLOS MOD
                     $mail->Body = $message;
 
                     if ($mail->send()) {

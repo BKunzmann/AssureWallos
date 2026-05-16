@@ -26,9 +26,24 @@ Höchste Priorität hat die **Wartbarkeit** und die **Minimierung von Merge-Konf
 
 ### 6. Versionierung (Zwei-Ebenen-Modell)
 - **Wallos-Basis:** `includes/version.php` — nur bei Upstream-Merges von ellite/Wallos anpassen (z. B. `v4.8.4`). Nicht erhöhen, wenn nur AssureWallos-Code geändert wurde.
-- **AssureWallos-Release:** `includes/insurance/assure_version.php` — SemVer ohne führendes `v` in `$assure_version` (z. B. `0.1.0`). Bei Assure-Releases erhöhen; Git-Tags als `v0.1.0` auf **BKunzmann/AssureWallos**.
+- **AssureWallos-Release:** `includes/insurance/assure_version.php` — SemVer ohne führendes `v` in `$assure_version` (z. B. `0.1.0`).
+- **Wann Version erhöhen:** Nur wenn der Nutzer ein **Release** will (sinnvoller Meilenstein: Feature fertig, PR, Tag). **Nicht** bei jedem kleinen Fix, CSS-Tweak oder Zwischenschritt — weder `$assure_version` noch `CHANGELOG-ASSURE.md` anfassen.
+- **Git-Tags:** Nur gemeinsam mit Release und nur auf ausdrückliche Anfrage (`vX.Y.Z` auf **BKunzmann/AssureWallos**).
 - **Anzeige:** Wallos-Stand kommt zur Laufzeit aus `$version`; Assure-Anzeige über `assure_version_display()` und UI-Snippets in `/includes/insurance/ui/`.
-- **Changelog:** Fork-Änderungen in `CHANGELOG-ASSURE.md` dokumentieren — `CHANGELOG.md` gehört dem Wallos-Upstream, nicht für Versicherungsfeatures überschreiben.
-- **Releases:** Vor Tag `vX.Y.Z`: `$assure_version` bumpen, `CHANGELOG-ASSURE.md` ergänzen, optional Docker-Image `assurewallos:X.Y.Z` taggen.
+- **Changelog:** Fork-Änderungen in `CHANGELOG-ASSURE.md` — Einträge **gebündelt** zum Release, nicht pro Mikro-Änderung.
 - **SemVer AssureWallos:** `0.x` = Vor-1.0; Minor = neue Features/Migrationen; Patch = Fixes ohne Breaking Changes; `1.0.0` = stabile Nutzer-API/DB.
 - **API:** `api/status/version.php` liefert zusätzlich `assure_version`, `assure_version_number`, `assure_display` — bei Erweiterungen kompatibel halten.
+
+### 8. Git & Commits
+- **Sammel-Commits:** Änderungen im Working Tree **sammeln**; **keinen** Commit nach jedem kleinen Schritt, es sei denn der Nutzer verlangt es ausdrücklich.
+- **Kein proaktives Committen/Pushen:** Commits und Push nur auf **explizite** Anweisung des Nutzers.
+- **Commit-Inhalt:** Ein Commit = zusammengehöriger logischer Block (z. B. „Branding Phase 1+2“, „Insurance-Taxonomie“), nicht „CSS-Zeile 42“.
+- **Version/Changelog/Tag:** Erst beim **Release-Commit** (oder wenn der Nutzer „Version bumpen“ sagt) — nicht parallel zu jedem Feature-Commit.
+
+### 7. Branding (Name, Logo, About)
+- **Zentral:** `includes/insurance/assure_brand.php` für Produktname, Titel, Logo-Pfade und Upstream-URLs — nicht in Core-Dateien duplizieren.
+- **UI-Snippets:** `includes/insurance/ui/head_brand.php`, `logo_inner.php`, `logo_block.php`, `about_assure.php`, `about_upstream.php`.
+- **Logo:** Wallos-SVG (`images/siteicons/svg/logo.php`) + Label „Assure“ in `logo_inner.php`, Styles in `styles/insurance/brand.css`.
+- **Hooks:** Nur minimale `ASSUREWALLOS MOD`-Blöcke in `includes/header.php`, Auth-Seiten (`login.php`, …) und `about.php`.
+- **Upstream-Pflicht:** Wallos-Credits, GPLv3 und ellite-Links in `about_upstream.php` beibehalten; kein globales Ersetzen von „Wallos“ in allen i18n-Dateien.
+- **Phase 2:** `manifest.json`, E-Mail über `assure_mail_brand.php` (`assure_mail_subject`, `assure_mail_logo_html`). Favicon/Icons bei Bedarf unter `images/icon/` ersetzen (derzeit noch Wallos-Grafiken).

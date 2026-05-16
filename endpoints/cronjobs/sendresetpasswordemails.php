@@ -5,6 +5,9 @@ use PHPMailer\PHPMailer\Exception;
 
 require_once 'validate.php';
 require_once __DIR__ . '/../../includes/connect_endpoint_crontabs.php';
+// START ASSUREWALLOS MOD
+require_once __DIR__ . '/../../includes/insurance/assure_mail_brand.php';
+// END ASSUREWALLOS MOD
 
 require 'settimezone.php';
 
@@ -56,12 +59,14 @@ if ($rows) {
             foreach ($rows as $user) {
                 $mail->addAddress($user['email']);
                 $mail->isHTML(true);
-                $mail->Subject = 'Wallos - Reset Password';
-                $mail->Body = '<img src="' . $server_url . '/images/siteicons/wallos.png" alt="Logo" />
+                // START ASSUREWALLOS MOD
+                $mail->Subject = assure_mail_subject('Reset Password');
+                $mail->Body = assure_mail_logo_html($server_url) . '
                     <br>
                     A password reset was requested for your account.
                     <br>
                     Please click the following link to reset your password: <a href="' . $server_url . '/passwordreset.php?email=' . $user['email'] . '&token=' . $user['token'] . '">Reset Password</a>';
+                // END ASSUREWALLOS MOD
 
                 $mail->send();
 

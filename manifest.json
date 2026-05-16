@@ -1,6 +1,6 @@
 {
-  "short_name": "Wallos",
-  "name": "Wallos - Subscription Tracker",
+  "short_name": "AssureWallos",
+  "name": "AssureWallos – Insurance & subscriptions",
   "icons": [
     {
       "src": "images/icon/android-chrome-192x192.png",
@@ -26,7 +26,7 @@
     }
   ],
   "start_url": "/",
-  "id": "com.wallos.app",
+  "id": "com.assurewallos.app",
   "shortcuts": [
     {
       "name": "Dashboard",
@@ -91,7 +91,7 @@
     {
       "name": "About",
       "short_name": "About",
-      "description": "More info about Wallos",
+      "description": "More info about AssureWallos",
       "url": "about.php",
       "icons": [
         {
@@ -118,7 +118,7 @@
   "display": "standalone",
   "scope": "/",
   "theme_color": "#FFFFFF",
-  "description": "Wallos is a personal subscription tracker that helps you keep track of your subscriptions and save money.",
+  "description": "AssureWallos helps you track subscriptions and insurance policies in one place (based on Wallos).",
   "orientation": "portrait-primary",
   "display_override": [
     "window-controls-overlay"
