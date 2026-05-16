@@ -23,6 +23,9 @@ Example response:
 
 require_once '../../includes/connect_endpoint.php';
 require_once '../../includes/version.php';
+// START ASSUREWALLOS MOD
+require_once '../../includes/insurance/assure_version.php';
+// END ASSUREWALLOS MOD
 
 header('Content-Type: application/json; charset=UTF-8');
 
@@ -65,6 +68,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" || $_SERVER["REQUEST_METHOD"] === "GET
         "title" => "version",
         "version" => $version,
         "version_number" => $version_number,
+        // START ASSUREWALLOS MOD
+        "assure_version" => assure_version_tag(),
+        "assure_version_number" => assure_version_number(),
+        "assure_display" => assure_version_display(),
+        // END ASSUREWALLOS MOD
         "notes" => []
     ];
 

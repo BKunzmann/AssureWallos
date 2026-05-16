@@ -23,3 +23,12 @@ Höchste Priorität hat die **Wartbarkeit** und die **Minimierung von Merge-Konf
 
 ### 5. Dokumentation
 - Jede neue Funktion muss kurz dokumentiert werden, insbesondere wie sie mit dem Wallos-Core interagiert.
+
+### 6. Versionierung (Zwei-Ebenen-Modell)
+- **Wallos-Basis:** `includes/version.php` — nur bei Upstream-Merges von ellite/Wallos anpassen (z. B. `v4.8.4`). Nicht erhöhen, wenn nur AssureWallos-Code geändert wurde.
+- **AssureWallos-Release:** `includes/insurance/assure_version.php` — SemVer ohne führendes `v` in `$assure_version` (z. B. `0.1.0`). Bei Assure-Releases erhöhen; Git-Tags als `v0.1.0` auf **BKunzmann/AssureWallos**.
+- **Anzeige:** Wallos-Stand kommt zur Laufzeit aus `$version`; Assure-Anzeige über `assure_version_display()` und UI-Snippets in `/includes/insurance/ui/`.
+- **Changelog:** Fork-Änderungen in `CHANGELOG-ASSURE.md` dokumentieren — `CHANGELOG.md` gehört dem Wallos-Upstream, nicht für Versicherungsfeatures überschreiben.
+- **Releases:** Vor Tag `vX.Y.Z`: `$assure_version` bumpen, `CHANGELOG-ASSURE.md` ergänzen, optional Docker-Image `assurewallos:X.Y.Z` taggen.
+- **SemVer AssureWallos:** `0.x` = Vor-1.0; Minor = neue Features/Migrationen; Patch = Fixes ohne Breaking Changes; `1.0.0` = stabile Nutzer-API/DB.
+- **API:** `api/status/version.php` liefert zusätzlich `assure_version`, `assure_version_number`, `assure_display` — bei Erweiterungen kompatibel halten.

@@ -11,3 +11,10 @@ Core interaction points:
 - `ui/form_fields.php` and `ui/documents_section.php` are included by `subscriptions.php` inside the existing subscription form.
 
 Keep future insurance logic in this directory and expose it through small `assure_*` hook functions.
+
+## Versioning
+
+- AssureWallos release: `assure_version.php` (`$assure_version`, SemVer).
+- Wallos upstream: `includes/version.php` (only bump on merge from ellite/Wallos).
+- Changelog: `CHANGELOG-ASSURE.md` at repo root.
+- About page: `ui/about_version.php` (included from `about.php`).

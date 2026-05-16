@@ -17,6 +17,12 @@ if (!is_null($settings['latest_version'])) {
             <h2><?= translate('about', $i18n) ?></h2>
         </header>
         <div class="credits-list">
+            <?php
+            // START ASSUREWALLOS MOD
+            require_once __DIR__ . '/includes/insurance/assure_version.php';
+            include __DIR__ . '/includes/insurance/ui/about_version.php';
+            // END ASSUREWALLOS MOD
+            ?>
             <div>
                 <h3>
                     Wallos <?= $version ?> <?= $demoMode ? "Demo" : "" ?>
