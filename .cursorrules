@@ -39,7 +39,7 @@ Höchste Priorität hat die **Wartbarkeit** und die **Minimierung von Merge-Konf
 - **Images:** `docker.io/bkunzmann/assurewallos` (https://hub.docker.com/r/bkunzmann/assurewallos).
 - **CI:** `.github/workflows/assurewallos-docker.yaml` — Push auf `feature/insurance-core` → Tags `:feature-insurance-core`, `:sha-…`; Git-Tag `vX.Y.Z` → `:X.Y.Z`, `:X.Y`, optional `:latest`.
 - **Secrets (GitHub Repo):** `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` (Access Token mit Read/Write).
-- **Release-Ablauf:** `$assure_version` + `CHANGELOG-ASSURE.md` anpassen → committen → `./scripts/docker-release-tag.sh X.Y.Z` → `git push origin vX.Y.Z` (löst Build aus). Produktion: `docker-compose.hub.yaml`.
+- **Release-Ablauf:** `$assure_version` + `CHANGELOG-ASSURE.md` + `docker-compose.hub.yaml` (Image-Tag) anpassen → committen → `./scripts/docker-release-tag.sh X.Y.Z` → `git push origin vX.Y.Z` (löst Build aus). Produktion: `docker-compose.hub.yaml` (Port **8283**, Image-Tag **ohne** `v`).
 - **Upstream:** `.github/workflows/build-release.yaml` nur noch für `main` (Wallos), nicht für Assure-Releases.
 
 ### 9. Git & Commits

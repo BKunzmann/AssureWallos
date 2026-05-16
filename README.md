@@ -2,252 +2,133 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./images/siteicons/walloswhite.png">
     <source media="(prefers-color-scheme: light)" srcset="./images/siteicons/wallos.png">
-    <img alt="Wallos" src="./images/siteicons/wallos.png">
+    <img alt="AssureWallos" src="./images/siteicons/wallos.png">
   </picture>
 
-  <p>Wallos: Open-Source Personal Subscription Tracker</p>
+  <p><strong>AssureWallos</strong> — Insurance-aware fork of <a href="https://github.com/ellite/Wallos">Wallos</a></p>
+  <p>Self-hosted subscription &amp; insurance management (Wallos core + Assure extensions)</p>
 
-  [![Stars](https://img.shields.io/github/stars/ellite/Wallos?style=flat-square)](https://github.com/ellite/Wallos)
-  [![Docker](https://img.shields.io/docker/pulls/bellamy/wallos?style=flat-square)](https://hub.docker.com/r/bellamy/wallos)
-  [![GitHub contributors](https://img.shields.io/github/contributors/ellite/Wallos?style=flat-square)](https://github.com/ellite/Wallos/graphs/contributors)
-  [![GitHub Sponsors](https://img.shields.io/github/sponsors/ellite?style=flat-square)](https://github.com/sponsors/ellite)
-  [![Discord](https://img.shields.io/discord/1237073478910214235?logo=discord&style=flat-square)](https://discord.gg/anex9GUrPW)
+  [![GitHub](https://img.shields.io/github/stars/BKunzmann/AssureWallos?style=flat-square)](https://github.com/BKunzmann/AssureWallos)
+  [![Docker](https://img.shields.io/docker/pulls/bkunzmann/assurewallos?style=flat-square)](https://hub.docker.com/r/bkunzmann/assurewallos)
+  [![Wallos upstream](https://img.shields.io/github/stars/ellite/Wallos?style=flat-square&label=Wallos)](https://github.com/ellite/Wallos)
 </div>
-
 
 ## Table of Contents
 
 - [Introduction](#introduction)
 - [Features](#features)
-- [Demo](#demo)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-    - [Baremetal](#baremetal)
-    - [Docker](#docker)
-  - [Installation](#installation)
-    - [Baremetal](#baremetal-1)
-      - [Updating](#updating)
-    - [Docker](#docker-1)
-    - [Docker-Compose](#docker-compose)
+- [Installation (Docker Hub)](#installation-docker-hub)
+- [Development (local build)](#development-local-build)
 - [Usage](#usage)
-- [Screenshots](#screenshots)
-- [OIDC](#oidc)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
-  - [Contributors](#contributors)
-  - [Translations](#translations)
+- [Releases (maintainers)](#releases-maintainers)
+- [Based on Wallos](#based-on-wallos)
 - [License](#license)
 - [Links](#links)
 
 ## Introduction
 
-Wallos is a powerful, open-source, and self-hostable web application designed to empower you in managing your finances with ease. Say goodbye to complicated spreadsheets and expensive financial software – Wallos simplifies the process of tracking expenses and helps you gain better control over your financial life.
+**AssureWallos** is a specialized fork of [Wallos](https://github.com/ellite/Wallos) for households that want to track **subscriptions and insurance policies** in one self-hosted app. It keeps Wallos’ subscription workflow and adds insurance-specific data (taxonomy, documents, form hooks) with minimal changes to the upstream codebase for easier merges.
+
+- **AssureWallos version:** see `includes/insurance/assure_version.php` and the About page in the app.
+- **Wallos base version:** see `includes/version.php` (updated on upstream merges).
+- **Changelog (fork):** [CHANGELOG-ASSURE.md](CHANGELOG-ASSURE.md)
 
 ## Features
 
-- Subscription Management: Keep track of your recurring subscriptions and payments, ensuring you never miss a due date.
-- Category Management: Organize your expenses into customizable categories, enabling you to gain insights into your spending habits.
-- Multi-Currency support: Wallos supports multiple currencies, allowing you to manage your finances in the currency of your choice.
-- Currency Conversion: Integrates with the Fixer API so you can get exchange rates and see all your subscriptions on your main currency.
-- Data Privacy: As a self-hosted application, Wallos ensures that your financial data remains private and secure on your own server.
-- Customization: Tailor Wallos to your needs with customizable categories, currencies, themes and other display options.
-- Sorting Options: Allowing you to view your subscriptions from different perspectives.
-- Logo Search: Wallos can search the web for the logo of your subscriptions if you don't have them available for upload.
-- Mobile view: Wallos on the go.
-- Statistics: Another perspective into your spendings.
-- Notifications:  Wallos supports multiple notification methods (email, discord, pushover, telegram, gotify and webhooks). Get notified about your upcoming payments.
-- Multi Language support.
-- OIDC with OAuth
-- AI Recommendations with ChatGPT, Gemini or Local Ollama
+**From Wallos (unchanged core):** subscriptions, categories, multi-currency, notifications, OIDC, themes, mobile UI, statistics, and more — see [Wallos](https://github.com/ellite/Wallos).
 
-## Demo
+**AssureWallos additions:**
 
-If you want to try Wallos, a demo is available at [https://demo.wallosapp.com](https://demo.wallosapp.com).  
-The database is reset every 2 hours.  
-To access the demo use the following credentials:
+- Insurance flag and taxonomy on subscriptions
+- Upload/storage for insurance documents (`images/uploads/insurance_docs`)
+- AssureWallos branding (UI, manifest, e-mail subjects)
+- Separate SemVer and Docker images (`bkunzmann/assurewallos`)
 
-```python
-Username: demo  
-Password: demo
-```
+## Installation (Docker Hub)
 
-## Getting Started
+For **end users** who only need a running instance (no local build):
 
-See instructions to run Wallos below.
+1. Create a directory and copy [`docker-compose.hub.yaml`](docker-compose.hub.yaml) into it (or clone this repo).
+2. Create persistent data folders (if missing):
 
-### Prerequisites
+   ```bash
+   mkdir -p db logos images/uploads/insurance_docs
+   ```
 
-#### Baremetal
+3. Start (image tag must match a published release on Docker Hub):
 
-- NGINX or APACHE websever running
-- PHP 8.3 with the following modules enabled:
-    - curl
-    - dom
-    - gd
-    - imagick
-    - intl
-    - openssl
-    - sqlite3
-    - zip
-    - mbstring
-    - fpm
+   ```bash
+   docker compose -f docker-compose.hub.yaml pull
+   docker compose -f docker-compose.hub.yaml up -d
+   ```
 
-#### Docker
+4. Open **http://localhost:8283/** (default host port **8283** so a parallel Wallos instance on 8282 does not conflict). Change the port mapping in the compose file if needed.
 
-- Docker
+| Setting | Value |
+|--------|--------|
+| Image | `bkunzmann/assurewallos:0.1.2` (Docker tag **without** `v`; Git release tag is `v0.1.2`) |
+| Branch preview | `bkunzmann/assurewallos:feature-insurance-core` |
+| Hub | https://hub.docker.com/r/bkunzmann/assurewallos |
 
-### Installation
+**Update:** bump the `image:` version in `docker-compose.hub.yaml`, then `pull` and `up -d` again. Run migrations in the browser if prompted: `http://your-host:8283/endpoints/db/migrate.php`.
 
-#### Baremetal
+**Advanced configuration (German):** [docs/de/DOCKER-ENDNUTZER.md](docs/de/DOCKER-ENDNUTZER.md) — PUID/PGID, custom data paths, moving the document upload folder, optional healthcheck, troubleshooting. **Security:** [docs/de/SICHERHEIT.md](docs/de/SICHERHEIT.md) — HTTPS, reverse proxy, Synology, hardening.
 
-1. Download or clone this repo and move the files into your web root - usually `/var/www/html`
-2. Rename `/db/wallos.empty.db` to `/db/wallos.db`
-3. Run `http://domain.example/endpoints/db/migrate.php` on your browser
-4. Add the following scripts to your cronjobs with `crontab -e`
+## Development (local build)
+
+For **developers** on this repository (live code via bind mount):
 
 ```bash
-0 1 * * * php /var/www/html/endpoints/cronjobs/updatenextpayment.php >> /var/log/cron/updatenextpayment.log 2>&1
-0 2 * * * php /var/www/html/endpoints/cronjobs/updateexchange.php >> /var/log/cron/updateexchange.log 2>&1
-0 8 * * * php /var/www/html/endpoints/cronjobs/sendcancellationnotifications.php >> /var/log/cron/sendcancellationnotifications.log 2>&1
-0 9 * * * php /var/www/html/endpoints/cronjobs/sendnotifications.php >> /var/log/cron/sendnotifications.log 2>&1
-*/2 * * * * php /var/www/html/endpoints/cronjobs/sendverificationemails.php >> /var/log/cron/sendverificationemail.log 2>&1
-*/2 * * * * php /var/www/html/endpoints/cronjobs/sendresetpasswordemails.php >> /var/log/cron/sendresetpasswordemails.log 2>&1
-0 */6 * * * php /var/www/html/endpoints/cronjobs/checkforupdates.php >> /var/log/cron/checkforupdates.log 2>&1
-30 1 * * 1 php /var/www/html/endpoints/cronjobs/storetotalyearlycost.php >> /var/log/cron/storetotalyearlycost.log 2>&1
-30 3 * * 1 php /var/www/html/endpoints/cronjobs/generaterecommendations.php weekly >> /var/log/cron/generaterecommendations.log 2>&1
-0 4 1 * * php /var/www/html/endpoints/cronjobs/generaterecommendations.php monthly >> /var/log/cron/generaterecommendations.log 2>&1
+docker compose up -d          # or: docker compose up -d --build
+docker compose logs -f
 ```
 
-5. If your web root is not `/var/www/html/` adjust the cronjobs above accordingly.
+- Compose file: [`docker-compose.yaml`](docker-compose.yaml) — builds from `Dockerfile`, image `assurewallos:local`, mounts the repo into the container.
+- App: **http://localhost:8282/**
+- Stop: `docker compose down`
 
-#### Updating
-
-1. Re-download the repo and move the files into the correct folder or do `git pull` (if you used git clone before)
-2. Check the [Prerequisites](#baremetal) and install / enable the missing ones, if any.
-3. Run `http://domain.example/endpoints/db/migrate.php`
-
-#### Docker
-
-```bash
-docker run -d --name wallos -v /path/to/config/wallos/db:/var/www/html/db \
--v /path/to/config/wallos/logos:/var/www/html/images/uploads/logos \
--e TZ=Europe/Berlin -p 8282:80 --restart unless-stopped \
-bellamy/wallos:latest
-```
-
-Disable healthcheck (optional, e.g., for Docker <25 or faster startup reporting):
-
-```bash
-docker run -d --name wallos -v /path/to/config/wallos/db:/var/www/html/db \
--v /path/to/config/wallos/logos:/var/www/html/images/uploads/logos \
--e TZ=Europe/Berlin -p 8282:80 --restart unless-stopped \
---health-cmd=NONE \
-bellamy/wallos:latest
-```
-
-### Docker Compose
-
-```
-services:
-  wallos:
-    container_name: wallos
-    image: bellamy/wallos:latest
-    ports:
-      - "8282:80/tcp"
-    environment:
-      TZ: 'America/Toronto'
-    # Volumes store your data between container upgrades
-    volumes:
-      - './db:/var/www/html/db'
-      - './logos:/var/www/html/images/uploads/logos'
-    restart: unless-stopped
-```
-
-Disable healthcheck (optional, e.g., for Docker <25 or faster startup reporting):
-
-```
-services:
-  wallos:
-    container_name: wallos
-    image: bellamy/wallos:latest
-    ports:
-      - "8282:80/tcp"
-    environment:
-      TZ: 'America/Toronto'
-    volumes:
-      - './db:/var/www/html/db'
-      - './logos:/var/www/html/images/uploads/logos'
-    restart: unless-stopped
-    healthcheck:
-      test: ["NONE"]
-```
+Main branch for Assure work: `feature/insurance-core`.
 
 ## Usage
 
-Just open the browser and open `ip:port` of the machine running wallos.  
-On the first time you run wallos a user account must be created.  
-Go to settings and personalise your Avatar and add members of your household. While there add / remove any categories and currencies.  
-Get a free API Key from [Fixer](https://fixer.io/#pricing_plan) and add it in the settings.  
-If you want to trigger an Update of the exchange rates, change your main currency after adding the API Key, and then change it back to your preferred one.  
+Open the app URL in a browser. On first run, create the admin user, then configure categories, currencies, and (optionally) a [Fixer](https://fixer.io/#pricing_plan) API key in settings — same as Wallos.
 
-## Screenshots
+## Releases (maintainers)
 
-![Screenshot](screenshots/wallos-subscriptions-light.png)
+1. Set `$assure_version` in `includes/insurance/assure_version.php` (SemVer **without** leading `v`, e.g. `0.1.2`).
+2. Update `docker-compose.hub.yaml` → `image: bkunzmann/assurewallos:X.Y.Z` (same number, **no** `v` prefix).
+3. Add an entry to [CHANGELOG-ASSURE.md](CHANGELOG-ASSURE.md).
+4. Commit, then create and push the Git tag (triggers CI build to Docker Hub):
 
-![Screenshot](screenshots/wallos-subscriptions-dark.png)
+   ```bash
+   ./scripts/docker-release-tag.sh X.Y.Z
+   git push origin vX.Y.Z
+   ```
 
-![Screenshot](screenshots/wallos-stats.png)
+5. GitHub Actions (`.github/workflows/assurewallos-docker.yaml`) needs secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token with Read & Write).
 
-![Screenshot](screenshots/wallos-calendar.png)
+Published image tags follow the Git tag: `v0.1.2` → Docker tags `0.1.2`, `0.1`, and optionally `latest`.
 
-![Screenshot](screenshots/wallos-form.png)
+## Based on Wallos
 
-![Screenshot](screenshots/wallos-subscriptions-mobile-light.png) ![Screenshot](screenshots/wallos-subscriptions-mobile-dark.png)
+AssureWallos is a fork; copyright and license for the Wallos core remain with the original authors. We keep Wallos credits and GPLv3 notices in the app (About page).
 
-![Screenshot](screenshots/wallos-dashboard-mobile-light.png) ![Screenshot](screenshots/wallos-dashboard-mobile-dark.png)
+| Topic | Where |
+|--------|--------|
+| Upstream repo | https://github.com/ellite/Wallos |
+| Upstream Docker | `bellamy/wallos` |
+| Bare-metal install | [Wallos README — Baremetal](https://github.com/ellite/Wallos#baremetal) (same PHP/nginx steps apply to a manual AssureWallos deploy) |
+| API docs | https://api.wallosapp.com/ |
+| Wallos demo | https://demo.wallosapp.com (Wallos only, not AssureWallos) |
 
-## OIDC
-
-OIDC can be enabled on the Admin page and can be used with providers that support OAuth.
-
-## API Documentation
-
-Wallos provides a comprehensive API that allows you to interact with the application programmatically. The API documentation is available at [https://api.wallosapp.com/](https://api.wallosapp.com/).
-
-## Contributing
-
-Feel free to open Pull requests with bug fixes and features. I'll do my best to keep an eye on those.  
-Feel free to open issues with bug reports or feature requests. Bug fixes will take priority.  
-I welcome contributions from the community and look forward to working with you to improve this project.
-
-### Contributors
-
-<a href="https://github.com/ellite/wallos/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=ellite/wallos" />
-</a>
-
-### Translations
-
-If you want to contribute with a translation of wallos:
-- Add your language code to `includes/i18n/languages.php` in the format `"en" => ["name" => "English", "dir" => "ltr"],`. Please use the original language name and not the english translation.
-- Create a copy of the file `includes/i18n/en.php` and rename it to the language code you used above. Example: pt.php for "pt" => ["name" => "Português", "dir" => "ltr"],.
-- Translate all the values on the language file to the new language. (Incomplete translations will not be accepted).
-- Create a copy of the file `scripts/i18n/en.js` and rename it to the language code you used above. Example: pt.js for "pt" => ["name" => "Português", "dir" => "ltr"],.
-- Translate all the values on the language file to the new language. (Incomplete translations will not be accepted).
+OIDC, screenshots, translations, and contributing guidelines for the **Wallos core** are described in the upstream project. Assure-specific changes belong in this repo under `includes/insurance/` and `// START ASSUREWALLOS MOD` hooks.
 
 ## License
 
-This project is licensed under the [GNU General Public License, Version 3](LICENSE.md) - see the [LICENSE.md](LICENSE.md) file for details.
-
-### Why GPLv3?
-
-I chose the GNU General Public License version 3 (GPLv3) for this project because it ensures that the software remains open source and freely available to the community. GPLv3 mandates that any derivative works or modifications must also be released under the same license, promoting the principles of software freedom.
-
-I strongly believe in the importance of open source software and the collaborative nature of development, and I invite contributors to help improve this project.
+This project is licensed under the [GNU General Public License, Version 3](LICENSE.md) — see [LICENSE.md](LICENSE.md) file for details (inherited from Wallos).
 
 ## Links
 
-- The author: [henrique.pt](https://henrique.pt)
-- Wallos Landingpage: [wallosapp.com](https://wallosapp.com)
-- Join the conversation: [Discord Server](https://discord.gg/anex9GUrPW)
-
+- AssureWallos: https://github.com/BKunzmann/AssureWallos
+- Wallos upstream: https://github.com/ellite/Wallos · https://wallosapp.com
+- Docker Hub (AssureWallos): https://hub.docker.com/r/bkunzmann/assurewallos
