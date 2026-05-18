@@ -294,6 +294,11 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                         class="secondary-button thin mobile-grow" id="export-csv" <?= $demoMode ? 'disabled title="Not available on Demo Mode"' : '' ?>>
                 </div>
             </div>
+            <?php
+            // START ASSUREWALLOS MOD
+            include __DIR__ . '/includes/insurance/ui/profile_csv_import.php';
+            // END ASSUREWALLOS MOD
+            ?>
         </div>
         <div>
             <?php
@@ -320,6 +325,9 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
 
 </section>
 <script src="scripts/profile.js?<?= $version ?>"></script>
+<!-- START ASSUREWALLOS MOD -->
+<script src="scripts/insurance/csv_import.js?<?= $version ?>"></script>
+<!-- END ASSUREWALLOS MOD -->
 <script src="scripts/theme.js?<?= $version ?>"></script>
 <script src="scripts/notifications.js?<?= $version ?>"></script>
 

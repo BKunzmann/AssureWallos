@@ -30,6 +30,15 @@ AssureWallos **lädt keine Dateien** nach Paperless hoch. Im Versicherungsformul
 
 Bei Paperless im privaten Netz: Hostname in der Wallos-**Webhook-Allowlist** (Administration) eintragen (SSRF-Schutz).
 
+## CSV import
+
+Bulk import of subscriptions (including insurance fields) from CSV on the **profile** page: preview → confirm → create only (no updates).
+
+- Code: `ins_csv_import.php`
+- Endpoints: `csv_import_preview.php`, `csv_import_commit.php`, `csv_import_template.php`
+- UI: `ui/profile_csv_import.php`, `scripts/insurance/csv_import.js`
+- **Doku (DE):** `docs/de/CSV-IMPORT.md`
+
 ## Versioning
 
 - AssureWallos release: `assure_version.php` (`$assure_version`, SemVer).

@@ -614,3 +614,104 @@
 .subscription-form .assure-contract-id-sub {
   color: #777;
 }
+
+/* CSV import on profile page */
+.assure-csv-import-block {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--input-border-color);
+}
+
+.assure-csv-import-block h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.assure-csv-import-form .form-group {
+  margin-bottom: 12px;
+}
+
+.assure-csv-import-disabled {
+  color: #999;
+}
+
+.assure-csv-status-error {
+  color: var(--error-color, #c0392b);
+}
+
+.assure-csv-preview-wrap {
+  margin-top: 16px;
+}
+
+.assure-csv-summary {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.assure-csv-duplicate-opt {
+  margin-bottom: 12px;
+  gap: 10px;
+}
+
+.assure-csv-preview-table-wrap {
+  overflow-x: auto;
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid var(--input-border-color);
+  border-radius: 8px;
+}
+
+.assure-csv-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.assure-csv-preview-table th,
+.assure-csv-preview-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--input-border-color);
+  vertical-align: top;
+}
+
+.assure-csv-preview-table th {
+  background: rgba(0, 0, 0, 0.04);
+  font-weight: 500;
+  position: sticky;
+  top: 0;
+}
+
+.assure-csv-messages {
+  color: #666;
+  max-width: 280px;
+}
+
+.assure-csv-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.assure-csv-badge--ok {
+  background: rgba(46, 125, 50, 0.15);
+  color: #2e7d32;
+}
+
+.assure-csv-badge--warning {
+  background: rgba(237, 108, 2, 0.15);
+  color: #e65100;
+}
+
+.assure-csv-badge--error {
+  background: rgba(198, 40, 40, 0.12);
+  color: #c62828;
+}
+
+.assure-csv-row-error {
+  background: rgba(198, 40, 40, 0.04);
+}

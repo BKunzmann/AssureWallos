@@ -57,6 +57,19 @@ class Ins_Repository
             && self::insTableExists($db, 'assure_documents');
     }
 
+    /**
+     * Field names importable via CSV (excludes insurance_type_id — resolved separately).
+     *
+     * @return list<string>
+     */
+    public static function insDetailFieldsForImport(): array
+    {
+        $fields = array_keys(self::DETAIL_FIELD_TYPES);
+        return array_values(array_filter($fields, static function (string $field): bool {
+            return $field !== 'insurance_type_id';
+        }));
+    }
+
     public static function insTaxonomyReady(SQLite3 $db): bool
     {
         if (!self::insTableExists($db, 'assure_insurance_groups')

@@ -61,5 +61,11 @@ $assureDemoSuffix = (!empty($demoMode)) ? ' Demo' : '';
                         target="_blank" title="<?= translate('external_url', $i18n) ?>" rel="noreferrer">
                         <i class="fa-solid fa-arrow-up-right-from-square"></i>
                     </a>
+                    ·
+                    CSV-Import
+                    <a href="<?= htmlspecialchars(assure_docs_url('docs/de/CSV-IMPORT.md'), ENT_QUOTES, 'UTF-8') ?>"
+                        target="_blank" title="<?= translate('external_url', $i18n) ?>" rel="noreferrer">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
                 </span>
             </div>

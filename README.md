@@ -42,6 +42,7 @@
 - Insurance flag and taxonomy on subscriptions
 - Upload/storage for insurance documents (`images/uploads/insurance_docs`)
 - Optional **Paperless-ngx** read-only archive in the insurance form (list or thumbnail preview)
+- **CSV import** for subscriptions + insurance fields (preview, then confirm; profile page)
 - AssureWallos branding (UI, manifest, e-mail subjects)
 - Separate SemVer and Docker images (`bkunzmann/assurewallos`)
 
@@ -81,6 +82,7 @@ For **end users** who only need a running instance (no local build):
 | Security (HTTPS, reverse proxy, Synology) | [docs/de/SICHERHEIT.md](docs/de/SICHERHEIT.md) |
 | Paperless-ngx setup (admin) | [docs/de/PAPERLESS-ADMIN.md](docs/de/PAPERLESS-ADMIN.md) |
 | Paperless archive in the app (users) | [docs/de/PAPERLESS-BENUTZER.md](docs/de/PAPERLESS-BENUTZER.md) |
+| CSV import (subscriptions + insurance) | [docs/de/CSV-IMPORT.md](docs/de/CSV-IMPORT.md) |
 
 ## Development (local build)
 
@@ -140,4 +142,4 @@ This project is licensed under the [GNU General Public License, Version 3](LICEN
 - AssureWallos: https://github.com/BKunzmann/AssureWallos
 - Wallos upstream: https://github.com/ellite/Wallos · https://wallosapp.com
 - Docker Hub (AssureWallos): https://hub.docker.com/r/bkunzmann/assurewallos
-- German docs: [DOCKER-ENDNUTZER](docs/de/DOCKER-ENDNUTZER.md) · [SICHERHEIT](docs/de/SICHERHEIT.md) · [Paperless Admin](docs/de/PAPERLESS-ADMIN.md) · [Paperless Benutzer](docs/de/PAPERLESS-BENUTZER.md)
+- German docs: [DOCKER-ENDNUTZER](docs/de/DOCKER-ENDNUTZER.md) · [SICHERHEIT](docs/de/SICHERHEIT.md) · [Paperless Admin](docs/de/PAPERLESS-ADMIN.md) · [Paperless Benutzer](docs/de/PAPERLESS-BENUTZER.md) · [CSV-Import](docs/de/CSV-IMPORT.md)
