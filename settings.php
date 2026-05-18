@@ -1466,6 +1466,7 @@ $userData['currency_symbol'] = $currencies[$main_currency]['symbol'];
     <?php
     // START ASSUREWALLOS MOD
     include __DIR__ . '/includes/insurance/ui/settings_taxonomy.php';
+    include __DIR__ . '/includes/insurance/ui/settings_paperless.php';
     // END ASSUREWALLOS MOD
     ?>
 
@@ -1496,6 +1497,7 @@ $userData['currency_symbol'] = $currencies[$main_currency]['symbol'];
 <script src="scripts/notifications.js?<?= $version ?>"></script>
 <!-- START ASSUREWALLOS MOD -->
 <script src="scripts/insurance/settings_taxonomy.js?<?= $version ?>"></script>
+<script src="scripts/insurance/settings_paperless.js?<?= $version ?>"></script>
 <!-- END ASSUREWALLOS MOD -->
 
 <?php

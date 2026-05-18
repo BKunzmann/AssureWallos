@@ -541,6 +541,7 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
 <script src="scripts/subscriptions.js?<?= $version ?>"></script>
 <!-- START ASSUREWALLOS MOD -->
 <script src="scripts/insurance/form_toggle.js?<?= $version ?>"></script>
+<script src="scripts/insurance/paperless_archive.js?<?= $version ?>"></script>
 <!-- END ASSUREWALLOS MOD -->
 <?php
 if (isset($_GET['add'])) {

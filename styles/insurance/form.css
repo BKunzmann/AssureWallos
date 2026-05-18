@@ -336,3 +336,281 @@
     max-width: 100%;
   }
 }
+
+/* Paperless-ngx read-only archive */
+.assure-paperless-archive-wrap.hide,
+.assure-paperless-archive-toolbar.hide {
+  display: none !important;
+}
+
+.assure-paperless-archive-wrap {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--input-border-color);
+}
+
+.assure-paperless-archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subscription-form .assure-paperless-archive-row {
+  align-items: center;
+  gap: 10px;
+}
+
+.assure-paperless-archive-date {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+  font-size: 13px;
+  color: #777;
+}
+
+.subscription-form .assure-paperless-archive-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--main-color);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subscription-form .assure-paperless-archive-link:hover {
+  text-decoration: underline;
+  color: var(--hover-color);
+}
+
+.assure-paperless-open-btn {
+  flex: 0 0 auto;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.assure-paperless-archive-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.assure-paperless-archive-heading h4 {
+  margin: 0;
+}
+
+.assure-paperless-archive-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.assure-paperless-view-label {
+  font-size: 13px;
+  color: #777;
+  margin-right: 2px;
+}
+
+.assure-paperless-view-btn.is-active {
+  border-color: var(--main-color);
+  color: var(--main-color);
+}
+
+.assure-paperless-archive-list--preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.assure-paperless-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--input-border-color);
+  border-radius: 6px;
+  background: var(--background-color, #fff);
+}
+
+.assure-paperless-preview-thumb {
+  display: block;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f0f0f0;
+  aspect-ratio: 3 / 4;
+}
+
+.assure-paperless-preview-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.assure-paperless-preview-img.is-broken {
+  min-height: 120px;
+  background:
+    linear-gradient(135deg, #e8e8e8 25%, transparent 25%) -10px 0,
+    linear-gradient(225deg, #e8e8e8 25%, transparent 25%) -10px 0,
+    linear-gradient(315deg, #e8e8e8 25%, transparent 25%),
+    linear-gradient(45deg, #e8e8e8 25%, transparent 25%);
+  background-size: 20px 20px;
+  background-color: #f4f4f4;
+}
+
+.assure-paperless-preview-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.assure-paperless-preview-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--main-color);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.assure-paperless-preview-title:hover {
+  color: var(--hover-color);
+  text-decoration: underline;
+}
+
+.assure-paperless-preview-date {
+  font-size: 12px;
+  color: #777;
+}
+
+.assure-paperless-preview-card .assure-paperless-open-btn {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+#assure-paperless-settings .assure-paperless-status-error {
+  color: var(--error-color, #c0392b);
+}
+
+#assure-paperless-settings .assure-paperless-status-ok {
+  color: var(--main-color);
+}
+
+#assure-paperless-settings .assure-paperless-token-ok {
+  color: var(--main-color);
+  margin-top: 6px;
+}
+
+#assure-paperless-settings .buttons input.disabled,
+#assure-paperless-settings .buttons input:disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Paperless settings layout */
+#assure-paperless-settings .account-settings-list > .form-group,
+#assure-paperless-settings .account-settings-list > .form-group-inline {
+  margin-bottom: 0;
+}
+
+#assure-paperless-settings .account-settings-list > .form-group .assure-field-note {
+  margin-bottom: 6px;
+}
+
+#assure-paperless-settings .assure-paperless-match-panel.hide,
+#assure-paperless-settings .form-group-inline.hide {
+  display: none !important;
+}
+
+#assure-paperless-settings .assure-paperless-match-block,
+#assure-paperless-settings .assure-paperless-cache-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--input-border-color);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+#assure-paperless-settings .assure-paperless-match-block .form-group,
+#assure-paperless-settings .assure-paperless-match-block .form-group-inline,
+#assure-paperless-settings .assure-paperless-cache-block.form-group {
+  margin-bottom: 0;
+}
+
+#assure-paperless-settings .assure-paperless-subheading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+#assure-paperless-settings .assure-paperless-match-header .assure-field-note {
+  margin-top: 6px;
+}
+
+#assure-paperless-settings .assure-paperless-match-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 2px;
+}
+
+#assure-paperless-settings .assure-paperless-match-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#assure-paperless-settings .assure-paperless-match-panel label {
+  margin-bottom: 0;
+}
+
+#assure-paperless-settings .assure-paperless-mode-help {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #777;
+}
+
+#assure-paperless-settings .assure-paperless-fallback {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--input-border-color);
+  gap: 10px;
+}
+
+#assure-paperless-settings .assure-paperless-cache-block .assure-paperless-subheading {
+  margin-bottom: 2px;
+}
+
+#assure-paperless-settings .assure-paperless-cache-block label {
+  margin-top: 4px;
+}
+
+/* Vertrags-ID hint under insurance toggle */
+.subscription-form .assure-contract-id-hint {
+  margin: 8px 0 12px;
+  padding: 0;
+}
+
+.subscription-form .assure-contract-id-hint.hide {
+  display: none !important;
+}
+
+.subscription-form .assure-contract-id-hint strong {
+  color: var(--main-color);
+  font-weight: 600;
+}
+
+.subscription-form .assure-contract-id-sub {
+  color: #777;
+}

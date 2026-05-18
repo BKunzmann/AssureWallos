@@ -75,4 +75,12 @@ function assure_issues_url(): string
     return 'https://github.com/' . assure_github_repo() . '/issues';
 }
 
+/**
+ * GitHub-URL zu einer Markdown-Datei im Repo (z. B. docs/de/PAPERLESS-ADMIN.md).
+ */
+function assure_docs_url(string $relativePath): string
+{
+    return 'https://github.com/' . assure_github_repo() . '/blob/main/' . ltrim($relativePath, '/');
+}
+
 ?>

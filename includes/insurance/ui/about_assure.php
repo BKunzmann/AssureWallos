@@ -31,3 +31,35 @@ $assureDemoSuffix = (!empty($demoMode)) ? ' Demo' : '';
                     </a>
                 </span>
             </div>
+            <div>
+                <h3>Dokumentation (DE)</h3>
+                <span>
+                    Docker
+                    <a href="<?= htmlspecialchars(assure_docs_url('docs/de/DOCKER-ENDNUTZER.md'), ENT_QUOTES, 'UTF-8') ?>"
+                        target="_blank" title="<?= translate('external_url', $i18n) ?>" rel="noreferrer">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                    ·
+                    Sicherheit
+                    <a href="<?= htmlspecialchars(assure_docs_url('docs/de/SICHERHEIT.md'), ENT_QUOTES, 'UTF-8') ?>"
+                        target="_blank" title="<?= translate('external_url', $i18n) ?>" rel="noreferrer">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </span>
+            </div>
+            <div>
+                <h3>Paperless-ngx</h3>
+                <span>
+                    Einrichtung (Admin)
+                    <a href="<?= htmlspecialchars(assure_docs_url('docs/de/PAPERLESS-ADMIN.md'), ENT_QUOTES, 'UTF-8') ?>"
+                        target="_blank" title="<?= translate('external_url', $i18n) ?>" rel="noreferrer">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                    ·
+                    Benutzer
+                    <a href="<?= htmlspecialchars(assure_docs_url('docs/de/PAPERLESS-BENUTZER.md'), ENT_QUOTES, 'UTF-8') ?>"
+                        target="_blank" title="<?= translate('external_url', $i18n) ?>" rel="noreferrer">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </span>
+            </div>

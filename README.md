@@ -41,6 +41,7 @@
 
 - Insurance flag and taxonomy on subscriptions
 - Upload/storage for insurance documents (`images/uploads/insurance_docs`)
+- Optional **Paperless-ngx** read-only archive in the insurance form (list or thumbnail preview)
 - AssureWallos branding (UI, manifest, e-mail subjects)
 - Separate SemVer and Docker images (`bkunzmann/assurewallos`)
 
@@ -72,7 +73,14 @@ For **end users** who only need a running instance (no local build):
 
 **Update:** bump the `image:` version in `docker-compose.hub.yaml`, then `pull` and `up -d` again. Run migrations in the browser if prompted: `http://your-host:8283/endpoints/db/migrate.php`.
 
-**Advanced configuration (German):** [docs/de/DOCKER-ENDNUTZER.md](docs/de/DOCKER-ENDNUTZER.md) — PUID/PGID, custom data paths, moving the document upload folder, optional healthcheck, troubleshooting. **Security:** [docs/de/SICHERHEIT.md](docs/de/SICHERHEIT.md) — HTTPS, reverse proxy, Synology, hardening.
+**Documentation (German):**
+
+| Topic | Guide |
+|--------|--------|
+| Docker install & data paths | [docs/de/DOCKER-ENDNUTZER.md](docs/de/DOCKER-ENDNUTZER.md) |
+| Security (HTTPS, reverse proxy, Synology) | [docs/de/SICHERHEIT.md](docs/de/SICHERHEIT.md) |
+| Paperless-ngx setup (admin) | [docs/de/PAPERLESS-ADMIN.md](docs/de/PAPERLESS-ADMIN.md) |
+| Paperless archive in the app (users) | [docs/de/PAPERLESS-BENUTZER.md](docs/de/PAPERLESS-BENUTZER.md) |
 
 ## Development (local build)
 
@@ -132,3 +140,4 @@ This project is licensed under the [GNU General Public License, Version 3](LICEN
 - AssureWallos: https://github.com/BKunzmann/AssureWallos
 - Wallos upstream: https://github.com/ellite/Wallos · https://wallosapp.com
 - Docker Hub (AssureWallos): https://hub.docker.com/r/bkunzmann/assurewallos
+- German docs: [DOCKER-ENDNUTZER](docs/de/DOCKER-ENDNUTZER.md) · [SICHERHEIT](docs/de/SICHERHEIT.md) · [Paperless Admin](docs/de/PAPERLESS-ADMIN.md) · [Paperless Benutzer](docs/de/PAPERLESS-BENUTZER.md)

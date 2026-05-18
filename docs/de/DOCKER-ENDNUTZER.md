@@ -264,8 +264,23 @@ Vor größeren Änderungen (Pfad-Umzug, Update) sichern:
 
 ---
 
+## Paperless-ngx (optional)
+
+AssureWallos kann im Versicherungsformular **bereits archivierte** Dokumente aus [Paperless-ngx](https://docs.paperless-ngx.com/) anzeigen (nur Lesen, kein Upload aus AssureWallos).
+
+**Ausführliche Anleitungen:**
+
+- **[PAPERLESS-ADMIN.md](PAPERLESS-ADMIN.md)** — Einrichtung, Zuordnungsmodi (Custom Field, Tag, Volltext), Docker/SSRF, Fehlerbehebung
+- **[PAPERLESS-BENUTZER.md](PAPERLESS-BENUTZER.md)** — Nutzung im Versicherungsformular (Liste/Vorschau, Vertrags-ID)
+
+**Kurz:** API-Token in Paperless → AssureWallos **Einstellungen** → **Paperless-ngx** → speichern & testen → Dokumente in Paperless mit **Vertrags-ID** verknüpfen. Bei Docker/LAN: Hostname in der Wallos-**Administration** → **Webhook-Allowlist** eintragen.
+
+---
+
 ## Siehe auch
 
+- [PAPERLESS-ADMIN.md](PAPERLESS-ADMIN.md) — Paperless einrichten (Administrator)
+- [PAPERLESS-BENUTZER.md](PAPERLESS-BENUTZER.md) — Paperless-Archiv nutzen (Benutzer)
 - [SICHERHEIT.md](SICHERHEIT.md) — Reverse Proxy, HTTPS, Synology, Firewall, Backups
 - [README (Installation)](../../README.md#installation-docker-hub)
 - [CHANGELOG-ASSURE.md](../../CHANGELOG-ASSURE.md)

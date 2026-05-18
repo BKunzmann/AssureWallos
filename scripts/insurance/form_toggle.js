@@ -45,6 +45,41 @@ function assureRegisterStylesheet() {
   document.head.appendChild(link);
 }
 
+/**
+ * Zeigt die interne Vertrags-ID (subscriptions.id) für Paperless-Zuordnung an.
+ */
+function assureUpdateContractIdHint() {
+  const hint = document.querySelector("#assure-contract-id-hint");
+  const valueEl = document.querySelector("#assure-contract-id-value");
+  const subEl = document.querySelector("#assure-contract-id-sub");
+  const isInsurance = document.querySelector("#is_insurance");
+  const idEl = document.querySelector("#id");
+
+  if (!hint || !valueEl) {
+    return;
+  }
+
+  const show = !!(isInsurance && isInsurance.checked);
+  hint.classList.toggle("hide", !show);
+
+  if (!show) {
+    return;
+  }
+
+  const sid = idEl && idEl.value ? parseInt(idEl.value, 10) : 0;
+  if (sid > 0) {
+    valueEl.textContent = String(sid);
+    if (subEl) {
+      subEl.textContent = " — für Paperless z. B. Tag aw-sub-" + sid + " oder Custom Field mit diesem Wert.";
+    }
+  } else {
+    valueEl.textContent = "—";
+    if (subEl) {
+      subEl.textContent = " — erscheint nach dem ersten Speichern des Vertrags.";
+    }
+  }
+}
+
 function assureToggleInsuranceFields() {
   const isInsurance = document.querySelector("#is_insurance");
   const fieldGroups = [
@@ -54,6 +89,7 @@ function assureToggleInsuranceFields() {
     document.querySelector("#assure-insurance-values"),
     document.querySelector("#assure-insurance-contact"),
     document.querySelector("#assure-insurance-documents"),
+    document.querySelector("#assure-paperless-archive"),
   ];
 
   fieldGroups.forEach((group) => {
@@ -65,6 +101,19 @@ function assureToggleInsuranceFields() {
   });
 
   assureUpdateDocumentUploadButtonState();
+  assureUpdateContractIdHint();
+
+  if (typeof assureLoadPaperlessArchive === "function" && typeof assurePaperlessArchiveReset === "function") {
+    if (isInsurance.checked) {
+      const sidEl = document.querySelector("#id");
+      const sid = sidEl && sidEl.value ? parseInt(sidEl.value, 10) : 0;
+      if (sid > 0) {
+        assureLoadPaperlessArchive(sid);
+      }
+    } else {
+      assurePaperlessArchiveReset();
+    }
+  }
 }
 
 /**
@@ -199,7 +248,11 @@ function assureResetInsuranceForm() {
 
   assureRenderTaxonomy(assureInsuranceTaxonomy, null);
   assureRenderDocuments([]);
+  if (typeof assurePaperlessArchiveReset === "function") {
+    assurePaperlessArchiveReset();
+  }
   assureToggleInsuranceFields();
+  assureUpdateContractIdHint();
 }
 
 function assureFillInsuranceForm(subscription) {
@@ -229,6 +282,13 @@ function assureFillInsuranceForm(subscription) {
   assureRenderDocuments(subscription.insurance_documents || []);
   assureSyncUrlLinks();
   assureReconcileCategoryInsuranceFromDb();
+
+  assureUpdateContractIdHint();
+
+  if (typeof assureLoadPaperlessArchive === "function") {
+    const subId = subscription.id ?? document.querySelector("#id")?.value;
+    assureLoadPaperlessArchive(subId);
+  }
 }
 
 function assureSetFieldValue(fieldId, value) {

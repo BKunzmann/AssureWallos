@@ -10,4 +10,9 @@
     <input type="checkbox" id="is_insurance" name="is_insurance">
     <label for="is_insurance" class="grow">Dies ist eine Versicherung</label>
   </div>
+  <p id="assure-contract-id-hint" class="assure-field-note assure-contract-id-hint hide" aria-live="polite">
+    <span class="assure-contract-id-label">Vertrags-ID:</span>
+    <strong id="assure-contract-id-value">—</strong>
+    <span id="assure-contract-id-sub" class="assure-contract-id-sub"></span>
+  </p>
 </div>

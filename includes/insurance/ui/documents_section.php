@@ -44,5 +44,6 @@
       <template id="assure-insurance-delete-icon-svg"><?php include __DIR__ . '/../../../images/siteicons/svg/delete.php'; ?></template>
     </div>
     <div id="assure-existing-documents" class="assure-document-entries" aria-live="polite"></div>
+    <?php include __DIR__ . '/paperless_archive_section.php'; ?>
   </div>
 </div>
