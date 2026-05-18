@@ -36,6 +36,7 @@ Höchste Priorität hat die **Wartbarkeit** und die **Minimierung von Merge-Konf
 
 ### 8. Release & Docker Hub
 - **Entwicklungs-Branch:** `feature/insurance-core` — Fork und Releases laufen von hier, nicht von `main`.
+- **Doku-Links in der App:** `$assure_github_docs_branch` in `assure_version.php` (aktuell `feature/insurance-core`) — nicht `main`, solange `docs/de/` nur auf dem Feature-Branch liegt.
 - **Images:** `docker.io/bkunzmann/assurewallos` (https://hub.docker.com/r/bkunzmann/assurewallos).
 - **CI:** `.github/workflows/assurewallos-docker.yaml` — nur Git-Tag `vX.Y.Z` (Release) oder manuell (`workflow_dispatch`); Tags `:X.Y.Z`, `:X.Y`, optional `:latest`. Kein Build bei jedem Branch-Push.
 - **Secrets (GitHub Repo):** `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` (Access Token mit Read/Write).

@@ -10,6 +10,12 @@ $assure_version = '0.1.2';
 $assure_github_repo = 'BKunzmann/AssureWallos';
 
 /**
+ * Branch für Doku-Links (GitHub blob/…), solange Assure-Docs nicht auf main liegen.
+ * Nach Merge auf main: auf 'main' setzen.
+ */
+$assure_github_docs_branch = 'feature/insurance-core';
+
+/**
  * AssureWallos-Versionsnummer ohne „v“ (z. B. 0.1.0).
  */
 function assure_version_number(): string
@@ -80,7 +86,11 @@ function assure_issues_url(): string
  */
 function assure_docs_url(string $relativePath): string
 {
-    return 'https://github.com/' . assure_github_repo() . '/blob/main/' . ltrim($relativePath, '/');
+    global $assure_github_docs_branch;
+
+    $branch = !empty($assure_github_docs_branch) ? (string) $assure_github_docs_branch : 'main';
+
+    return 'https://github.com/' . assure_github_repo() . '/blob/' . rawurlencode($branch) . '/' . ltrim($relativePath, '/');
 }
 
 ?>
