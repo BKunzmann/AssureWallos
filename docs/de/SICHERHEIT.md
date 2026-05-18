@@ -165,7 +165,7 @@ Im Image u. a. begrenzte Upload-Größe (PHP/nginx, z. B. 25 MB) und erlau
 
 ## Docker und Daten
 
-- **Image-Tag pinnen** (`bkunzmann/assurewallos:0.1.2`), nicht blind `:latest` in Produktion.
+- **Image-Tag pinnen** (`bkunzmann/assurewallos:0.2.0`), nicht blind `:latest` in Produktion.
 - **PUID/PGID** an den Besitzer der Host-Ordner anpassen ([DOCKER-ENDNUTZER.md](DOCKER-ENDNUTZER.md)).
 - **Backups** regelmäßig:
   - `db/` (SQLite)

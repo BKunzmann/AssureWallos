@@ -3,6 +3,19 @@
 Versionsnummern folgen [Semantic Versioning](https://semver.org/) für **AssureWallos** nur.
 Die Wallos-Basisversion steht in `includes/version.php` und wird bei Upstream-Merges angepasst.
 
+## [0.2.0] - 2026-05-19
+
+### Added
+
+- **Paperless-ngx** (read-only): Archivierte Dokumente im Versicherungsformular anzeigen (Custom Field, Tag oder Volltext); Admin-Einstellungen, Vorschau-Thumbnails, Liste/Vorschau-Umschalter.
+- Migration `9999_99_07_assure_paperless_settings.php` (Instanz-Konfiguration + optionaler Cache).
+- **CSV-Import** (Profil): Abonnements inkl. Versicherungsfelder importieren (Vorschau → Bestätigung, nur neue Datensätze).
+- Doku (DE): `docs/de/PAPERLESS-ADMIN.md`, `docs/de/PAPERLESS-BENUTZER.md`, `docs/de/CSV-IMPORT.md`; Verweise in README und About-Seite.
+
+### Changed
+
+- `docker-compose.hub.yaml`: Image-Tag **0.2.0**.
+
 ## [0.1.2] - 2026-05-16
 
 ### Changed
