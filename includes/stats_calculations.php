@@ -146,7 +146,11 @@ if ($result) {
             }
             $next_payment = $subscription['next_payment'];
             $payerId = $subscription['payer_user_id'];
-            $members[$payerId]['count'] += 1;
+            // START ASSUREWALLOS MOD — leerer Zahler (z. B. CSV-Import) darf keine Stats-Warnung auslösen
+            if ($payerId !== null && $payerId !== '' && isset($members[$payerId])) {
+                $members[$payerId]['count'] += 1;
+            }
+            // END ASSUREWALLOS MOD
             $categoryId = $subscription['category_id'];
             $categories[$categoryId]['count'] += 1;
             $paymentMethodId = $subscription['payment_method_id'];
@@ -159,7 +163,11 @@ if ($result) {
             if ($inactive == 0) {
                 $activeSubscriptions++;
                 $totalCostPerMonth += $price;
-                $memberCost[$payerId]['cost'] += $price;
+                // START ASSUREWALLOS MOD
+                if ($payerId !== null && $payerId !== '' && isset($memberCost[$payerId])) {
+                    $memberCost[$payerId]['cost'] += $price;
+                }
+                // END ASSUREWALLOS MOD
                 $categoryCost[$categoryId]['cost'] += $price;
                 $paymentMethodsCount[$paymentMethodId]['count'] += 1;
                 if ($price > $mostExpensiveSubscription['price']) {

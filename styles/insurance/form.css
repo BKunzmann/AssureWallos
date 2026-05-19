@@ -615,25 +615,10 @@
   color: #777;
 }
 
-/* CSV import on profile page */
-.assure-csv-import-block {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--input-border-color);
-}
-
-.assure-csv-import-block h3 {
-  margin: 0 0 8px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.assure-csv-import-form .form-group {
-  margin-bottom: 12px;
-}
-
-.assure-csv-import-disabled {
-  color: #999;
+/* AssureWallos CSV import — Vorschau (Profil-Blöcke nutzen Wallos-Standardabstände) */
+#assure-csv-import .hide,
+.assure-csv-preview-wrap .hide {
+  display: none !important;
 }
 
 .assure-csv-status-error {
@@ -645,28 +630,77 @@
 }
 
 .assure-csv-summary {
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   font-size: 14px;
   color: var(--text-color);
 }
 
-.assure-csv-duplicate-opt {
-  margin-bottom: 12px;
-  gap: 10px;
+.assure-csv-preview-options {
+  margin: 0 0 20px;
+}
+
+#assure-csv-import .assure-csv-option-row {
+  margin-bottom: 10px;
+}
+
+#assure-csv-import .assure-csv-option-row:last-child {
+  margin-bottom: 0;
+}
+
+#assure-csv-import .assure-csv-option-row.form-group-inline {
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+#assure-csv-import .assure-csv-option-row input[type="checkbox"] + label {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-color);
 }
 
 .assure-csv-preview-table-wrap {
   overflow-x: auto;
-  max-height: 360px;
   overflow-y: auto;
+  max-height: 360px;
   border: 1px solid var(--input-border-color);
   border-radius: 8px;
+  isolation: isolate;
+  -webkit-overflow-scrolling: touch;
+}
+
+.assure-csv-preview-table-wrap--scroll-x .assure-csv-preview-table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
+}
+
+.assure-csv-preview-table-wrap--scroll-x .assure-csv-col-extra {
+  white-space: nowrap;
+}
+
+.assure-csv-preview-table-wrap--scroll-x .assure-csv-col-messages {
+  min-width: 16rem;
+  max-width: 28rem;
+  white-space: normal;
 }
 
 .assure-csv-preview-table {
   width: 100%;
-  border-collapse: collapse;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 13px;
+}
+
+.assure-csv-preview-table .assure-csv-col-line {
+  width: 3.5rem;
+  min-width: 3.5rem;
+  max-width: 3.5rem;
+  white-space: nowrap;
+  text-align: center;
+  padding-left: 8px;
+  padding-right: 8px;
+  overflow: visible;
 }
 
 .assure-csv-preview-table th,
@@ -675,18 +709,31 @@
   text-align: left;
   border-bottom: 1px solid var(--input-border-color);
   vertical-align: top;
+  background: var(--box-background-color, #fff);
 }
 
-.assure-csv-preview-table th {
-  background: rgba(0, 0, 0, 0.04);
-  font-weight: 500;
+.assure-csv-preview-table thead th {
   position: sticky;
   top: 0;
+  z-index: 2;
+  font-weight: 500;
+  background: var(--box-background-color, #fff);
+  box-shadow: 0 1px 0 var(--input-border-color);
+}
+
+.assure-csv-preview-table tbody td {
+  word-break: break-word;
 }
 
 .assure-csv-messages {
   color: #666;
-  max-width: 280px;
+  min-width: 12rem;
+  max-width: 28rem;
+}
+
+#assure_csv_actions_wrap.form-group-inline {
+  margin-top: 20px;
+  margin-bottom: 0;
 }
 
 .assure-csv-badge {

@@ -46,7 +46,8 @@ if ((int) ($file['size'] ?? 0) > Ins_Csv_Import::MAX_FILE_BYTES) {
 }
 
 $raw = (string) file_get_contents($file['tmp_name']);
-$parsed = Ins_Csv_Import::insParseCsv($raw);
+$csvEncoding = (string) ($_POST['csv_encoding'] ?? 'auto');
+$parsed = Ins_Csv_Import::insParseCsv($raw, $csvEncoding);
 
 if (!$parsed['success']) {
     echo json_encode([
@@ -62,8 +63,29 @@ $uiDefaults = [
     'default_currency_id' => (int) ($_POST['default_currency_id'] ?? 0),
 ];
 
-$preview = Ins_Csv_Import::insPreview($db, (int) $userId, $parsed['rows'], $uiDefaults);
+try {
+    $preview = Ins_Csv_Import::insPreview($db, (int) $userId, $parsed['rows'], $uiDefaults);
+} catch (Throwable $e) {
+    error_log('AssureWallos CSV preview: ' . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Vorschau konnte nicht erstellt werden: ' . $e->getMessage(),
+    ]);
+    $db->close();
+    exit;
+}
 
-echo json_encode($preview);
+$json = json_encode($preview, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+if ($json === false) {
+    error_log('AssureWallos CSV preview json_encode: ' . json_last_error_msg());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Vorschau-Antwort konnte nicht erzeugt werden (ungültige Zeichen in der CSV?).',
+    ]);
+    $db->close();
+    exit;
+}
+
+echo $json;
 
 $db->close();

@@ -174,9 +174,15 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
             $currentCategory = $subscription['category_id'];
         }
         if ($sort == "payer_user_id" && $subscription['payer_user_id'] != $currentPayerUserId) {
+            // START ASSUREWALLOS MOD
+            $assurePayerId = $subscription['payer_user_id'] ?? null;
+            $assurePayerTitle = ($assurePayerId !== null && $assurePayerId !== '' && isset($members[$assurePayerId]))
+                ? $members[$assurePayerId]['name']
+                : '—';
+            // END ASSUREWALLOS MOD
             ?>
             <div class="subscription-list-title">
-                <?= $members[$subscription['payer_user_id']]['name'] ?>
+                <?= $assurePayerTitle ?>
             </div>
             <?php
             $currentPayerUserId = $subscription['payer_user_id'];
@@ -326,8 +332,20 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                 <div class="subscription-secondary">
                     <span
                         class="name"><?php include $imagePath . "images/siteicons/svg/subscription.php"; ?><?= $subscription['name'] ?></span>
+                    <?php
+                    // START ASSUREWALLOS MOD — leerer Zahler (z. B. CSV-Import)
+                    $assurePayerId = $subscription['payer_user_id'] ?? null;
+                    $assurePayerName = ($assurePayerId !== null && $assurePayerId !== '' && isset($members[$assurePayerId]))
+                        ? $members[$assurePayerId]['name']
+                        : '';
+                    if ($assurePayerName !== '') {
+                    ?>
                     <span class="payer_user"
-                        title="<?= translate('paid_by', $i18n) ?>"><?php include $imagePath . "images/siteicons/svg/payment.php"; ?><?= $members[$subscription['payer_user_id']]['name'] ?></span>
+                        title="<?= translate('paid_by', $i18n) ?>"><?php include $imagePath . "images/siteicons/svg/payment.php"; ?><?= $assurePayerName ?></span>
+                    <?php
+                    }
+                    // END ASSUREWALLOS MOD
+                    ?>
                     <span class="category"
                         title="<?= translate('category', $i18n) ?>"><?php include $imagePath . "images/siteicons/svg/category.php"; ?><?= $categories[$subscription['category_id']]['name'] ?></span>
                     <?php

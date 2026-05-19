@@ -18,13 +18,15 @@ function assureCsvSetStatus(message, isError) {
   el.classList.toggle("assure-csv-status-error", !!isError);
 }
 
-function assureCsvSetButtons(previewVisible) {
-  const previewBtn = document.getElementById("assure_csv_preview_btn");
-  const commitBtn = document.getElementById("assure_csv_commit_btn");
-  const cancelBtn = document.getElementById("assure_csv_cancel_btn");
-  if (previewBtn) previewBtn.classList.toggle("hide", previewVisible);
-  if (commitBtn) commitBtn.classList.toggle("hide", !previewVisible);
-  if (cancelBtn) cancelBtn.classList.toggle("hide", !previewVisible);
+function assureCsvSetVisible(el, visible) {
+  if (!el) return;
+  el.classList.toggle("hide", !visible);
+  el.hidden = !visible;
+}
+
+function assureCsvSetActionsVisible(visible) {
+  const actions = document.getElementById("assure_csv_actions_wrap");
+  assureCsvSetVisible(actions, visible);
 }
 
 function assureCsvResetPreview() {
@@ -33,13 +35,13 @@ function assureCsvResetPreview() {
   const body = document.getElementById("assure_csv_preview_body");
   const summary = document.getElementById("assure_csv_summary");
   const dupWrap = document.getElementById("assure_csv_duplicate_wrap");
-  if (wrap) wrap.classList.add("hide");
+  assureCsvSetVisible(wrap, false);
   if (body) body.innerHTML = "";
   if (summary) summary.textContent = "";
-  if (dupWrap) dupWrap.classList.add("hide");
+  assureCsvSetVisible(dupWrap, false);
   const dupCheck = document.getElementById("assure_csv_include_duplicates");
   if (dupCheck) dupCheck.checked = false;
-  assureCsvSetButtons(false);
+  assureCsvSetActionsVisible(false);
 }
 
 function assureCsvStatusLabel(status) {
@@ -49,44 +51,87 @@ function assureCsvStatusLabel(status) {
   return status;
 }
 
+function assureCsvFormatMessages(messages) {
+  if (Array.isArray(messages)) {
+    return messages.join(" ");
+  }
+  return messages ? String(messages) : "";
+}
+
+function assureCsvSetExtraColumnsVisible(visible) {
+  document.querySelectorAll(".assure-csv-col-extra").forEach((el) => {
+    assureCsvSetVisible(el, visible);
+  });
+  const tableWrap = document.querySelector(".assure-csv-preview-table-wrap");
+  if (tableWrap) {
+    tableWrap.classList.toggle("assure-csv-preview-table-wrap--scroll-x", !!visible);
+  }
+}
+
+/** Spaltenkopf fest „Zeile“ (kein title, nicht übersetzen/abschneiden). */
+function assureCsvFixLineHeader() {
+  const th = document.querySelector(".assure-csv-preview-table th.assure-csv-col-line");
+  if (!th) return;
+  th.setAttribute("translate", "no");
+  th.classList.add("notranslate");
+  th.removeAttribute("title");
+  th.textContent = "Zeile";
+}
+
 function assureCsvRenderPreview(data) {
   const wrap = document.getElementById("assure_csv_preview_wrap");
   const body = document.getElementById("assure_csv_preview_body");
   const summary = document.getElementById("assure_csv_summary");
   const dupWrap = document.getElementById("assure_csv_duplicate_wrap");
-  if (!wrap || !body || !summary) return;
-
-  const s = data.summary || {};
-  summary.textContent = `Zeilen: ${s.total || 0} — OK: ${s.ok || 0}, Warnungen: ${s.warning || 0}, Fehler: ${s.error || 0}, importierbar: ${s.importable || 0}`;
-
-  body.innerHTML = "";
-  let hasWarningDup = false;
-
-  (data.rows || []).forEach((row) => {
-    const tr = document.createElement("tr");
-    tr.className = `assure-csv-row-${row.status || "ok"}`;
-
-    const messages = (row.messages || []).join(" ");
-    if (row.status === "warning" && messages.toLowerCase().includes("existiert bereits")) {
-      hasWarningDup = true;
-    }
-
-    tr.innerHTML = `
-      <td>${row.line ?? ""}</td>
-      <td><span class="assure-csv-badge assure-csv-badge--${row.status}">${assureCsvStatusLabel(row.status)}</span></td>
-      <td>${escapeHtml(row.name || "")}</td>
-      <td>${escapeHtml(row.policy_number || "")}</td>
-      <td class="assure-csv-messages">${escapeHtml(messages)}</td>
-    `;
-    body.appendChild(tr);
-  });
-
-  if (dupWrap) {
-    dupWrap.classList.toggle("hide", !hasWarningDup);
+  if (!wrap || !body || !summary) {
+    assureCsvSetStatus("Vorschau-Bereich nicht gefunden (Seite neu laden).", true);
+    return;
   }
 
-  wrap.classList.remove("hide");
-  assureCsvSetButtons(true);
+  try {
+    const s = data.summary || {};
+    summary.textContent = `Zeilen: ${s.total || 0} — OK: ${s.ok || 0}, Warnungen: ${s.warning || 0}, Fehler: ${s.error || 0}, importierbar: ${s.importable || 0}`;
+
+    body.innerHTML = "";
+    let hasWarningDup = false;
+
+    const rows = Array.isArray(data.rows) ? data.rows : [];
+    rows.forEach((row) => {
+      const tr = document.createElement("tr");
+      tr.className = `assure-csv-row-${row.status || "ok"}`;
+
+      const messages = assureCsvFormatMessages(row.messages);
+      if (row.status === "warning" && messages.toLowerCase().includes("existiert bereits")) {
+        hasWarningDup = true;
+      }
+
+      tr.innerHTML = `
+      <td class="assure-csv-col-line">${row.line ?? ""}</td>
+      <td><span class="assure-csv-badge assure-csv-badge--${row.status}">${assureCsvStatusLabel(row.status)}</span></td>
+      <td>${escapeHtml(row.name || "")}</td>
+      <td>${escapeHtml(row.price || "")}</td>
+      <td>${escapeHtml(row.category || "")}</td>
+      <td class="assure-csv-col-extra hide">${escapeHtml(row.cycle || "")}</td>
+      <td class="assure-csv-col-extra hide">${escapeHtml(row.next_payment || "")}</td>
+      <td class="assure-csv-col-extra hide">${escapeHtml(row.insurance_type || "")}</td>
+      <td>${escapeHtml(row.policy_number || "")}</td>
+      <td class="assure-csv-messages assure-csv-col-messages">${escapeHtml(messages)}</td>
+    `;
+      body.appendChild(tr);
+    });
+
+    const showExtra = document.getElementById("assure_csv_show_extra_cols");
+    assureCsvSetExtraColumnsVisible(!!(showExtra && showExtra.checked));
+
+    assureCsvFixLineHeader();
+
+    assureCsvSetVisible(dupWrap, hasWarningDup);
+    assureCsvSetVisible(wrap, true);
+    assureCsvSetActionsVisible(true);
+  } catch (err) {
+    console.error("CSV preview render failed:", err);
+    assureCsvSetStatus("Vorschau konnte nicht angezeigt werden.", true);
+  }
 }
 
 function escapeHtml(text) {
@@ -95,30 +140,107 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+/**
+ * Liest die gewählte Datei sofort in den Speicher (vermeidet net::ERR_UPLOAD_FILE_CHANGED,
+ * wenn Cloud-Sync/Excel die Datei auf der Platte zwischen Auswahl und Upload ändert).
+ */
+function assureCsvSnapshotFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      reject(new Error("no_file"));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(new Blob([reader.result], { type: file.type || "text/csv" }));
+    };
+    reader.onerror = () => reject(reader.error || new Error("read_failed"));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function assureCsvPreviewUploadFailed(err) {
+  console.error("CSV preview upload failed:", err);
+  const name = err && err.name ? String(err.name) : "";
+  const msg = err && err.message ? String(err.message) : "";
+  if (name === "NotReadableError" || /changed|modif/i.test(msg)) {
+    assureCsvSetStatus(
+      "Datei konnte nicht gelesen werden (wurde nach der Auswahl verändert). " +
+        "CSV erneut speichern, Excel schließen, nicht aus einem Cloud-Sync-Ordner während des Uploads.",
+      true
+    );
+    return;
+  }
+  if (msg === "invalid_json") {
+    assureCsvSetStatus(
+      "Server-Antwort ungültig (kein JSON). CSV als UTF-8 speichern oder Vorlage nutzen. Details in der Browser-Konsole (F12).",
+      true
+    );
+    return;
+  }
+  if (/^http_5/.test(msg)) {
+    assureCsvSetStatus("Server-Fehler bei der Vorschau (HTTP 5xx). Bitte Logs prüfen.", true);
+    return;
+  }
+  if (/^http_4/.test(msg)) {
+    assureCsvSetStatus("Vorschau abgelehnt (HTTP 4xx). Bitte neu anmelden und erneut versuchen.", true);
+    return;
+  }
+  assureCsvSetStatus("Vorschau fehlgeschlagen. Details in der Browser-Konsole (F12).", true);
+}
+
 function assureCsvPreview() {
   const fileInput = document.getElementById("assure_csv_file");
   const categorySelect = document.getElementById("assure_csv_default_category");
+  const previewBtn = document.getElementById("assure_csv_preview_btn");
   if (!fileInput || !fileInput.files || !fileInput.files[0]) {
     assureCsvSetStatus("Bitte eine CSV-Datei auswählen.", true);
     return;
   }
 
+  const file = fileInput.files[0];
   assureCsvSetStatus("Vorschau wird geladen…");
-  assureCsvResetPreview();
+  if (previewBtn) previewBtn.disabled = true;
 
-  const fd = new FormData();
-  fd.append("csv_file", fileInput.files[0]);
-  fd.append("csrf_token", window.csrfToken || "");
-  if (categorySelect && categorySelect.value) {
-    fd.append("default_category_id", categorySelect.value);
-  }
+  assureCsvSnapshotFile(file)
+    .then((blob) => {
+      assureCsvResetPreview();
 
-  fetch(assureCsvEndpoint("endpoints/insurance/csv_import_preview.php"), {
-    method: "POST",
-    credentials: "same-origin",
-    body: fd,
-  })
-    .then((r) => r.json())
+      const fd = new FormData();
+      fd.append("csv_file", blob, file.name || "import.csv");
+      fd.append("csrf_token", window.csrfToken || "");
+      if (categorySelect && categorySelect.value) {
+        fd.append("default_category_id", categorySelect.value);
+      }
+      const encodingSelect = document.getElementById("assure_csv_encoding");
+      if (encodingSelect && encodingSelect.value) {
+        fd.append("csv_encoding", encodingSelect.value);
+      }
+
+      return fetch(assureCsvEndpoint("endpoints/insurance/csv_import_preview.php"), {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        body: fd,
+      });
+    })
+    .then(async (r) => {
+      const bodyText = await r.text();
+      if (!r.ok) {
+        throw new Error(`http_${r.status}`);
+      }
+      let data;
+      try {
+        data = bodyText ? JSON.parse(bodyText) : null;
+      } catch (parseErr) {
+        console.error("CSV preview: invalid JSON response", bodyText.slice(0, 400));
+        throw new Error("invalid_json");
+      }
+      if (!data || typeof data !== "object") {
+        throw new Error("invalid_json");
+      }
+      return data;
+    })
     .then((data) => {
       if (!data.success) {
         assureCsvSetStatus(data.message || "Vorschau fehlgeschlagen.", true);
@@ -140,8 +262,11 @@ function assureCsvPreview() {
         (s.importable || 0) === 0
       );
     })
-    .catch(() => {
-      assureCsvSetStatus("Vorschau fehlgeschlagen.", true);
+    .catch((err) => {
+      assureCsvPreviewUploadFailed(err);
+    })
+    .finally(() => {
+      if (previewBtn) previewBtn.disabled = false;
     });
 }
 
@@ -205,6 +330,7 @@ function assureCsvInit() {
   if (!block) return;
 
   assureCsvEnsureStyles();
+  assureCsvFixLineHeader();
 
   const previewBtn = document.getElementById("assure_csv_preview_btn");
   const commitBtn = document.getElementById("assure_csv_commit_btn");
@@ -225,6 +351,18 @@ function assureCsvInit() {
       assureCsvSetStatus("");
     });
   }
+
+  const extraCols = document.getElementById("assure_csv_show_extra_cols");
+  if (extraCols && extraCols.dataset.bound !== "1") {
+    extraCols.dataset.bound = "1";
+    extraCols.addEventListener("change", () => {
+      assureCsvSetExtraColumnsVisible(extraCols.checked);
+    });
+  }
 }
 
-document.addEventListener("DOMContentLoaded", assureCsvInit);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", assureCsvInit);
+} else {
+  assureCsvInit();
+}

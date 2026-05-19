@@ -101,6 +101,13 @@ class Ins_Csv_Import
         'contact_phone' => 'contact_phone',
         'contact_email' => 'contact_email',
         'claim_reference_notes' => 'claim_reference_notes',
+        // Wallos-Profil-Export (englische Anzeigenamen)
+        'payment_cycle' => 'cycle',
+        'paid_by' => 'payer',
+        'renewal' => 'auto_renew',
+        'state' => 'inactive',
+        'notifications' => 'notify',
+        'cancellation_date' => 'cancellation_date',
     ];
 
     /** @var array<string, string> */
@@ -117,6 +124,9 @@ class Ins_Csv_Import
         'jährlich' => 'Yearly',
         'jaehrlich' => 'Yearly',
         'annual' => 'Yearly',
+        'quarterly' => 'Monthly',
+        'vierteljährlich' => 'Monthly',
+        'vierteljaehrlich' => 'Monthly',
     ];
 
     /**
@@ -244,25 +254,228 @@ class Ins_Csv_Import
     }
 
     /**
-     * @return array{success: bool, rows: array<int, array<string, string>>, message: ?string}
+     * Exportiert alle Abos des Nutzers inkl. Versicherungsfelder (Import-kompatibles CSV).
      */
-    public static function insParseCsv(string $raw): array
+    public static function insExportUserCsv(SQLite3 $db, int $userId): string
+    {
+        require_once dirname(__DIR__) . '/getdbkeys.php';
+
+        $headers = self::insTemplateHeaders();
+        $lines = [implode(';', $headers)];
+
+        $typeLookup = self::insBuildInsuranceTypeLookup($db, $userId);
+
+        $stmt = $db->prepare('SELECT * FROM subscriptions WHERE user_id = :userId ORDER BY name COLLATE NOCASE ASC');
+        $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
+        $result = $stmt->execute();
+
+        while ($result && ($row = $result->fetchArray(SQLITE3_ASSOC))) {
+            $subscriptionId = (int) ($row['id'] ?? 0);
+            $isInsurance = (int) ($row['is_insurance'] ?? 0);
+            $details = null;
+            if ($isInsurance && $subscriptionId > 0) {
+                $detailsStmt = $db->prepare(
+                    'SELECT * FROM assure_insurance_details WHERE subscription_id = :subscriptionId'
+                );
+                $detailsStmt->bindValue(':subscriptionId', $subscriptionId, SQLITE3_INTEGER);
+                $detailsResult = $detailsStmt->execute();
+                $details = $detailsResult ? $detailsResult->fetchArray(SQLITE3_ASSOC) : false;
+                if ($details === false) {
+                    $details = null;
+                }
+            }
+
+            $exportRow = self::insSubscriptionToExportRow($row, $details, [
+                'currencies' => $currencies,
+                'cycles' => $cycles,
+                'categories' => $categories,
+                'payment_methods' => $payment_methods,
+                'members' => $members,
+                'type_lookup' => $typeLookup,
+            ]);
+
+            $values = [];
+            foreach ($headers as $header) {
+                $values[] = self::insCsvEscape((string) ($exportRow[$header] ?? ''));
+            }
+            $lines[] = implode(';', $values);
+        }
+
+        return implode("\n", $lines) . "\n";
+    }
+
+    /**
+     * @param array<string, mixed> $subscription
+     * @param array<string, mixed>|null $details
+     * @param array<string, mixed> $context
+     * @return array<string, string>
+     */
+    private static function insSubscriptionToExportRow(array $subscription, ?array $details, array $context): array
+    {
+        $currencies = $context['currencies'] ?? [];
+        $cycles = $context['cycles'] ?? [];
+        $categories = $context['categories'] ?? [];
+        $paymentMethods = $context['payment_methods'] ?? [];
+        $members = $context['members'] ?? [];
+        $typeLookup = $context['type_lookup'] ?? [];
+
+        $currencyId = (int) ($subscription['currency_id'] ?? 0);
+        $currencyLabel = (string) ($currencies[$currencyId]['code'] ?? $currencies[$currencyId]['name'] ?? '');
+
+        $cycleId = (int) ($subscription['cycle'] ?? 0);
+        $cycleName = (string) ($cycles[$cycleId]['name'] ?? 'Monthly');
+        $frequency = max(1, (int) ($subscription['frequency'] ?? 1));
+
+        $categoryId = (int) ($subscription['category_id'] ?? 0);
+        $categoryName = (string) ($categories[$categoryId]['name'] ?? '');
+
+        $paymentMethodId = (int) ($subscription['payment_method_id'] ?? 0);
+        $paymentMethodName = (string) ($paymentMethods[$paymentMethodId]['name'] ?? '');
+
+        $payerId = (int) ($subscription['payer_user_id'] ?? 0);
+        $payerName = $payerId > 0 ? (string) ($members[$payerId]['name'] ?? '') : '';
+
+        $row = [
+            'name' => (string) ($subscription['name'] ?? ''),
+            'price' => self::insFormatExportPrice((float) ($subscription['price'] ?? 0)),
+            'currency' => $currencyLabel,
+            'cycle' => $cycleName,
+            'frequency' => (string) $frequency,
+            'next_payment' => (string) ($subscription['next_payment'] ?? ''),
+            'category' => $categoryName,
+            'payment_method' => $paymentMethodName,
+            'payer' => $payerName,
+            'notes' => (string) ($subscription['notes'] ?? ''),
+            'url' => (string) ($subscription['url'] ?? ''),
+            'inactive' => !empty($subscription['inactive']) ? '1' : '0',
+            'notify' => !empty($subscription['notify']) ? '1' : '0',
+            'auto_renew' => !empty($subscription['auto_renew']) ? '1' : '0',
+            'start_date' => (string) ($subscription['start_date'] ?? ''),
+            'cancellation_date' => (string) ($subscription['cancellation_date'] ?? ''),
+            'is_insurance' => !empty($subscription['is_insurance']) ? '1' : '0',
+        ];
+
+        foreach (Ins_Repository::insDetailFieldsForImport() as $field) {
+            $row[$field] = '';
+        }
+        $row['insurance_group'] = '';
+        $row['insurance_type'] = '';
+
+        if (!empty($subscription['is_insurance']) && is_array($details)) {
+            $typeId = (int) ($details['insurance_type_id'] ?? 0);
+            if ($typeId > 0 && isset($typeLookup[$typeId])) {
+                $row['insurance_group'] = (string) ($typeLookup[$typeId]['group_name'] ?? '');
+                $row['insurance_type'] = (string) ($typeLookup[$typeId]['type_name'] ?? '');
+            }
+
+            foreach (Ins_Repository::insDetailFieldsForImport() as $field) {
+                if (!array_key_exists($field, $details)) {
+                    continue;
+                }
+                $value = $details[$field];
+                if ($value === null || $value === '') {
+                    continue;
+                }
+                if ($field === 'auto_contract_renewal') {
+                    $row['auto_renew'] = !empty($value) ? '1' : '0';
+                    continue;
+                }
+                $row[$field] = (string) $value;
+            }
+        }
+
+        return $row;
+    }
+
+    /**
+     * @return array<int, array{group_name: string, type_name: string}>
+     */
+    private static function insBuildInsuranceTypeLookup(SQLite3 $db, int $userId): array
+    {
+        if (!Ins_Repository::insTaxonomyReady($db)) {
+            return [];
+        }
+
+        $stmt = $db->prepare("
+            SELECT t.id AS type_id, t.name AS type_name, g.name AS group_name
+            FROM assure_insurance_types t
+            INNER JOIN assure_insurance_groups g ON g.id = t.group_id
+            WHERE t.active = 1 AND g.active = 1
+              AND (t.user_id IS NULL OR t.user_id = :userId)
+              AND (g.user_id IS NULL OR g.user_id = :userId)
+        ");
+        $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
+        $result = $stmt->execute();
+        $lookup = [];
+        while ($result && ($row = $result->fetchArray(SQLITE3_ASSOC))) {
+            $lookup[(int) $row['type_id']] = [
+                'group_name' => (string) ($row['group_name'] ?? ''),
+                'type_name' => (string) ($row['type_name'] ?? ''),
+            ];
+        }
+
+        return $lookup;
+    }
+
+    private static function insFormatExportPrice(float $price): string
+    {
+        if (fmod($price, 1.0) === 0.0) {
+            return (string) (int) $price;
+        }
+
+        return rtrim(rtrim(number_format($price, 2, '.', ''), '0'), '.');
+    }
+
+    /**
+     * Dekodiert CSV-Rohtext gemäß Nutzerwahl oder Heuristik (UTF-8, Windows-1252, Mojibake).
+     */
+    public static function insDecodeCsvText(string $raw, string $encoding = 'auto'): string
     {
         $raw = self::insStripBom($raw);
+        $encoding = strtolower(trim($encoding));
+
+        if ($encoding === 'utf-8' || $encoding === 'utf8') {
+            return self::insEnsureUtf8($raw);
+        }
+
+        if (in_array($encoding, ['windows-1252', 'win1252', 'excel', 'cp1252'], true)) {
+            if (!function_exists('mb_convert_encoding')) {
+                return self::insEnsureUtf8($raw);
+            }
+            $converted = @mb_convert_encoding($raw, 'UTF-8', 'Windows-1252');
+
+            return is_string($converted) && $converted !== '' ? $converted : self::insEnsureUtf8($raw);
+        }
+
+        return self::insAutoDecodeCsvText($raw);
+    }
+
+    /**
+     * @return array{success: bool, rows: array<int, array<string, string>>, message: ?string}
+     */
+    public static function insParseCsv(string $raw, string $encoding = 'auto'): array
+    {
+        $raw = self::insDecodeCsvText($raw, $encoding);
         $raw = trim($raw);
         if ($raw === '') {
             return ['success' => false, 'rows' => [], 'message' => 'Die CSV-Datei ist leer.'];
         }
 
-        $lines = preg_split('/\r\n|\r|\n/', $raw);
-        if (!is_array($lines) || count($lines) < 2) {
-            return ['success' => false, 'rows' => [], 'message' => 'Die CSV-Datei braucht eine Kopfzeile und mindestens eine Datenzeile.'];
-        }
-
-        $firstLine = (string) $lines[0];
+        $firstLineEnd = strpos($raw, "\n");
+        $firstLine = $firstLineEnd !== false ? substr($raw, 0, $firstLineEnd) : $raw;
         $delimiter = self::insDetectDelimiter($firstLine);
-        $headerRow = str_getcsv($firstLine, $delimiter);
+
+        $handle = fopen('php://memory', 'rb+');
+        if ($handle === false) {
+            return ['success' => false, 'rows' => [], 'message' => 'CSV konnte nicht gelesen werden.'];
+        }
+        fwrite($handle, $raw);
+        rewind($handle);
+
+        $headerRow = fgetcsv($handle, 0, $delimiter);
         if (!is_array($headerRow) || empty($headerRow)) {
+            fclose($handle);
+
             return ['success' => false, 'rows' => [], 'message' => 'Kopfzeile konnte nicht gelesen werden.'];
         }
 
@@ -276,38 +489,38 @@ class Ins_Csv_Import
         }
 
         if (!in_array('name', $canonical, true)) {
+            fclose($handle);
+
             return ['success' => false, 'rows' => [], 'message' => 'Pflichtspalte „name“ fehlt in der Kopfzeile.'];
         }
 
         $rows = [];
         $lineNo = 1;
-        for ($i = 1, $c = count($lines); $i < $c; $i++) {
+        while (($cells = fgetcsv($handle, 0, $delimiter)) !== false) {
             $lineNo++;
-            $line = trim((string) $lines[$i]);
-            if ($line === '') {
-                continue;
-            }
-
-            $cells = str_getcsv($line, $delimiter);
-            if (!is_array($cells)) {
+            if (!is_array($cells) || $cells === [null] || $cells === []) {
                 continue;
             }
 
             $assoc = [];
             $hasValue = false;
             foreach ($canonical as $index => $key) {
-                $value = trim((string) ($cells[$index] ?? ''));
+                $value = trim(self::insEnsureUtf8((string) ($cells[$index] ?? '')));
                 if ($value !== '') {
                     $hasValue = true;
                 }
                 $assoc[$key] = $value;
             }
 
-            if ($hasValue) {
-                $rows[] = $assoc;
+            if (!$hasValue) {
+                continue;
             }
 
+            $rows[] = ['line' => $lineNo, 'data' => $assoc];
+
             if (count($rows) > self::MAX_ROWS) {
+                fclose($handle);
+
                 return [
                     'success' => false,
                     'rows' => [],
@@ -315,6 +528,7 @@ class Ins_Csv_Import
                 ];
             }
         }
+        fclose($handle);
 
         if (empty($rows)) {
             return ['success' => false, 'rows' => [], 'message' => 'Keine Datenzeilen gefunden.'];
@@ -338,8 +552,14 @@ class Ins_Csv_Import
         $previewRows = [];
         $summary = ['total' => 0, 'ok' => 0, 'warning' => 0, 'error' => 0, 'importable' => 0];
 
-        foreach ($rawRows as $index => $raw) {
-            $line = $index + 2;
+        foreach ($rawRows as $index => $rawRow) {
+            if (is_array($rawRow) && isset($rawRow['data']) && is_array($rawRow['data'])) {
+                $line = (int) ($rawRow['line'] ?? ($index + 2));
+                $raw = $rawRow['data'];
+            } else {
+                $line = $index + 2;
+                $raw = is_array($rawRow) ? $rawRow : [];
+            }
             $validated = self::insValidateRow($db, $userId, $raw, $context, $uiDefaults, $line);
             $previewRows[] = $validated;
             $summary['total']++;
@@ -364,7 +584,12 @@ class Ins_Csv_Import
                     'importable' => $row['importable'],
                     'messages' => $row['messages'],
                     'name' => $row['display']['name'] ?? '',
+                    'price' => $row['display']['price'] ?? '',
+                    'category' => $row['display']['category'] ?? '',
                     'policy_number' => $row['display']['policy_number'] ?? '',
+                    'cycle' => $row['display']['cycle'] ?? '',
+                    'next_payment' => $row['display']['next_payment'] ?? '',
+                    'insurance_type' => $row['display']['insurance_type'] ?? '',
                 ];
             }, $previewRows),
             'batch_token' => $token,
@@ -522,6 +747,8 @@ class Ins_Csv_Import
         $status = 'ok';
         $duplicate = false;
 
+        $raw = self::insNormalizeImportRow($raw);
+
         $name = trim((string) ($raw['name'] ?? ''));
         if ($name === '') {
             $messages[] = 'Name fehlt.';
@@ -529,34 +756,56 @@ class Ins_Csv_Import
         }
 
         $priceRaw = trim((string) ($raw['price'] ?? ''));
-        if ($priceRaw === '' || !is_numeric(str_replace(',', '.', $priceRaw))) {
-            $messages[] = 'Preis fehlt oder ist ungültig.';
-            $status = 'error';
+        $priceParsed = self::insParsePrice($priceRaw);
+        $price = $priceParsed ?? 0.0;
+        if ($priceParsed === null) {
+            if ($priceRaw === '') {
+                $messages[] = 'Preis fehlt — 0 wird verwendet.';
+                $status = self::insEscalateStatus($status, 'warning');
+            } else {
+                $messages[] = 'Preis ist ungültig.';
+                $status = 'error';
+            }
         }
-        $price = (float) str_replace(',', '.', $priceRaw);
 
         $currencyId = self::insResolveCurrency($raw['currency'] ?? '', $context, $messages, $status);
-        if ($currencyId === null && $status !== 'error') {
+        if ($currencyId === null) {
             $currencyId = (int) ($uiDefaults['default_currency_id'] ?? $context['defaults']['currency_id']);
-            $messages[] = 'Währung nicht gefunden — Standard verwendet.';
+            if (trim((string) ($raw['currency'] ?? '')) !== '') {
+                $messages[] = 'Währung nicht gefunden — Hauptwährung verwendet.';
+            } else {
+                $messages[] = 'Währung leer — Hauptwährung verwendet.';
+            }
             $status = self::insEscalateStatus($status, 'warning');
         }
 
-        $cycleId = self::insResolveCycle($raw['cycle'] ?? '', $context, $messages, $status);
+        $cycleParsed = self::insParsePaymentCycle((string) ($raw['cycle'] ?? ''));
+        $cycleId = self::insResolveCycle($cycleParsed['cycle'], $context, $messages, $status);
         if ($cycleId === null) {
-            $messages[] = 'Zyklus fehlt oder unbekannt (z. B. Monthly, Yearly).';
-            $status = 'error';
+            $cycleId = self::insResolveCycle('Monthly', $context, $messages, $status);
+            $messages[] = 'Zyklus fehlt oder unbekannt — „Monthly“ verwendet.';
+            $status = self::insEscalateStatus($status, 'warning');
         }
 
-        $nextPayment = trim((string) ($raw['next_payment'] ?? ''));
-        if ($nextPayment === '' || !self::insIsIsoDate($nextPayment)) {
-            $messages[] = 'next_payment fehlt oder ungültig (YYYY-MM-DD).';
-            $status = 'error';
-        }
-
-        $frequency = (int) ($raw['frequency'] ?? '1');
+        $frequency = $cycleParsed['frequency'];
         if ($frequency < 1) {
             $frequency = 1;
+        }
+        $freqFromColumn = (int) ($raw['frequency'] ?? 0);
+        if ($freqFromColumn > 1) {
+            $frequency = $freqFromColumn;
+        }
+
+        $nextPaymentRaw = trim((string) ($raw['next_payment'] ?? ''));
+        $nextPayment = self::insParseDate($nextPaymentRaw);
+        if ($nextPayment === null) {
+            $nextPayment = '';
+            if ($nextPaymentRaw === '') {
+                $messages[] = 'next_payment fehlt — Feld bleibt leer.';
+            } else {
+                $messages[] = 'next_payment ungültig — Feld bleibt leer.';
+            }
+            $status = self::insEscalateStatus($status, 'warning');
         }
 
         $categoryId = self::insResolveCategory($raw['category'] ?? '', $context);
@@ -580,13 +829,11 @@ class Ins_Csv_Import
             }
         }
 
-        $payerId = self::insResolvePayer($raw['payer'] ?? '', $context);
-        if ($payerId === null) {
-            $payerId = (int) $context['defaults']['payer_id'];
-            if (trim((string) ($raw['payer'] ?? '')) !== '') {
-                $messages[] = 'Zahler nicht gefunden — Standard verwendet.';
-                $status = self::insEscalateStatus($status, 'warning');
-            }
+        $payerRaw = trim((string) ($raw['payer'] ?? ''));
+        $payerId = self::insResolvePayer($payerRaw, $context);
+        if ($payerRaw !== '' && $payerId === null) {
+            $messages[] = 'Zahler „' . $payerRaw . '“ nicht gefunden — Feld bleibt leer.';
+            $status = self::insEscalateStatus($status, 'warning');
         }
 
         $isInsurance = self::insParseBool($raw['is_insurance'] ?? '1', true);
@@ -598,7 +845,7 @@ class Ins_Csv_Import
             $status = self::insEscalateStatus($status, 'warning');
         }
 
-        if ($name !== '' && self::insNamePriceExists($db, $userId, $name, $price)) {
+        if ($name !== '' && $priceParsed !== null && self::insNamePriceExists($db, $userId, $name, $price)) {
             $messages[] = 'Name und Preis existieren bereits als Abonnement.';
             $duplicate = true;
             $status = self::insEscalateStatus($status, 'warning');
@@ -627,7 +874,8 @@ class Ins_Csv_Import
                 'cancellation_date' => self::insNullableDate($raw['cancellation_date'] ?? ''),
                 'replacement_subscription_id' => null,
                 'auto_renew' => self::insParseBool($raw['auto_renew'] ?? '1', true) ? 1 : 0,
-                'start_date' => self::insNullableDate($raw['start_date'] ?? '') ?? $nextPayment,
+                'start_date' => self::insNullableDate($raw['start_date'] ?? '')
+                    ?? ($nextPayment !== '' ? $nextPayment : null),
             ];
 
             if ($isInsurance) {
@@ -665,7 +913,7 @@ class Ins_Csv_Import
             }
         }
 
-        $importable = $status === 'ok' || ($status === 'warning' && !$duplicate);
+        $importable = $status !== 'error';
 
         return [
             'line' => $line,
@@ -675,7 +923,12 @@ class Ins_Csv_Import
             'messages' => $messages,
             'display' => [
                 'name' => $name,
+                'price' => $priceRaw !== '' ? $priceRaw : '',
+                'category' => self::insDisplayCategoryName($categoryId, $context),
                 'policy_number' => $policyNumber,
+                'cycle' => (string) ($cycleParsed['cycle'] ?? ''),
+                'next_payment' => $nextPayment !== '' ? $nextPayment : $nextPaymentRaw,
+                'insurance_type' => self::insEnsureUtf8(trim((string) ($raw['insurance_type'] ?? ''))),
             ],
             'subscription' => $subscription,
             'post' => $post,
@@ -690,26 +943,37 @@ class Ins_Csv_Import
         require_once dirname(__DIR__) . '/getdbkeys.php';
 
         $currencyMap = [];
+        $currencyIds = [];
         foreach ($currencies as $id => $row) {
+            $curId = (int) $id;
+            $currencyIds[$curId] = true;
             $code = strtolower(trim((string) ($row['code'] ?? '')));
             $name = strtolower(trim((string) ($row['name'] ?? '')));
+            $symbol = strtolower(trim((string) ($row['symbol'] ?? '')));
             if ($code !== '') {
-                $currencyMap[$code] = (int) $id;
+                $currencyMap[$code] = $curId;
             }
             if ($name !== '') {
-                $currencyMap[$name] = (int) $id;
+                $currencyMap[$name] = $curId;
+            }
+            if ($symbol !== '') {
+                $currencyMap[$symbol] = $curId;
             }
         }
 
         $categoryMap = [];
+        $categoryLabels = [];
         $firstCategoryId = 0;
         foreach ($categories as $id => $row) {
-            $key = strtolower(trim((string) ($row['name'] ?? '')));
+            $catId = (int) $id;
+            $catName = (string) ($row['name'] ?? '');
+            $categoryLabels[$catId] = $catName;
+            $key = strtolower(trim($catName));
             if ($key !== '') {
-                $categoryMap[$key] = (int) $id;
+                $categoryMap[$key] = $catId;
             }
             if ($firstCategoryId === 0) {
-                $firstCategoryId = (int) $id;
+                $firstCategoryId = $catId;
             }
         }
 
@@ -738,10 +1002,13 @@ class Ins_Csv_Import
         }
 
         $cycleMap = [];
+        $cycleIds = [];
         foreach ($cycles as $id => $row) {
+            $cycleId = (int) $id;
+            $cycleIds[$cycleId] = true;
             $key = strtolower(trim((string) ($row['name'] ?? '')));
             if ($key !== '') {
-                $cycleMap[$key] = (int) $id;
+                $cycleMap[$key] = $cycleId;
             }
         }
 
@@ -755,10 +1022,13 @@ class Ins_Csv_Import
 
         return [
             'currency_map' => $currencyMap,
+            'currency_ids' => $currencyIds,
             'category_map' => $categoryMap,
+            'category_labels' => $categoryLabels,
             'payment_map' => $paymentMap,
             'payer_map' => $payerMap,
             'cycle_map' => $cycleMap,
+            'cycle_ids' => $cycleIds,
             'defaults' => [
                 'currency_id' => $mainCurrencyId,
                 'category_id' => $firstCategoryId,
@@ -773,16 +1043,22 @@ class Ins_Csv_Import
      */
     private static function insResolveCurrency(string $value, array $context, array &$messages, string &$status): ?int
     {
-        $value = strtolower(trim($value));
-        if ($value === '') {
+        $value = trim($value);
+        if ($value === '' || $value === '0') {
             return null;
         }
 
-        $id = $context['currency_map'][$value] ?? null;
-        if ($id === null) {
-            $messages[] = 'Währung „' . $value . '“ unbekannt.';
-            $status = self::insEscalateStatus($status, 'error');
+        if (ctype_digit($value)) {
+            $id = (int) $value;
+            if (!empty($context['currency_ids'][$id])) {
+                return $id;
+            }
+
+            return null;
         }
+
+        $key = strtolower($value);
+        $id = $context['currency_map'][$key] ?? null;
 
         return $id !== null ? (int) $id : null;
     }
@@ -809,12 +1085,12 @@ class Ins_Csv_Import
             return (int) $context['cycle_map'][$normalized];
         }
 
-        if (is_numeric($value) && isset($context['cycle_map'][(int) $value])) {
-            return (int) $value;
+        if (ctype_digit($value)) {
+            $id = (int) $value;
+            if (!empty($context['cycle_ids'][$id])) {
+                return $id;
+            }
         }
-
-        $messages[] = 'Zyklus „' . $value . '“ unbekannt.';
-        $status = self::insEscalateStatus($status, 'error');
 
         return null;
     }
@@ -830,6 +1106,18 @@ class Ins_Csv_Import
         }
 
         return isset($context['category_map'][$key]) ? (int) $context['category_map'][$key] : null;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private static function insDisplayCategoryName(?int $categoryId, array $context): string
+    {
+        if ($categoryId === null || $categoryId <= 0) {
+            return '';
+        }
+
+        return (string) ($context['category_labels'][$categoryId] ?? '');
     }
 
     /**
@@ -866,21 +1154,22 @@ class Ins_Csv_Import
         array &$messages,
         string &$status
     ): ?int {
-        $typeName = trim($typeName);
+        $typeName = self::insEnsureUtf8(trim($typeName));
         if ($typeName === '') {
             return null;
         }
 
-        $groupName = trim($groupName);
+        $groupName = self::insEnsureUtf8(trim($groupName));
         $taxonomy = Ins_Repository::insLoadTaxonomy($db, $userId);
 
         foreach ($taxonomy as $group) {
-            $gName = strtolower(trim((string) ($group['name'] ?? '')));
+            $gName = strtolower(self::insEnsureUtf8(trim((string) ($group['name'] ?? ''))));
             if ($groupName !== '' && $gName !== strtolower($groupName)) {
                 continue;
             }
             foreach ($group['types'] ?? [] as $type) {
-                if (strtolower(trim((string) ($type['name'] ?? ''))) === strtolower($typeName)) {
+                $dbTypeName = self::insEnsureUtf8((string) ($type['name'] ?? ''));
+                if (self::insNamesMatchFuzzy($typeName, $dbTypeName)) {
                     return (int) $type['id'];
                 }
             }
@@ -889,7 +1178,8 @@ class Ins_Csv_Import
         if ($groupName !== '') {
             foreach ($taxonomy as $group) {
                 foreach ($group['types'] ?? [] as $type) {
-                    if (strtolower(trim((string) ($type['name'] ?? ''))) === strtolower($typeName)) {
+                    $dbTypeName = self::insEnsureUtf8((string) ($type['name'] ?? ''));
+                    if (self::insNamesMatchFuzzy($typeName, $dbTypeName)) {
                         $messages[] = 'Versicherungsart gefunden, Gruppe weicht ab.';
                         $status = self::insEscalateStatus($status, 'warning');
 
@@ -899,7 +1189,7 @@ class Ins_Csv_Import
             }
         }
 
-        $messages[] = 'Versicherungsart „' . $typeName . '“ nicht gefunden.';
+        $messages[] = 'Versicherungsart „' . self::insEnsureUtf8($typeName) . '“ nicht gefunden.';
         $status = self::insEscalateStatus($status, 'warning');
 
         return null;
@@ -959,7 +1249,12 @@ class Ins_Csv_Import
         $stmt->bindValue(':frequency', (int) $subscription['frequency'], SQLITE3_INTEGER);
         $stmt->bindValue(':notes', (string) ($subscription['notes'] ?? ''), SQLITE3_TEXT);
         $stmt->bindValue(':paymentMethodId', (int) $subscription['payment_method_id'], SQLITE3_INTEGER);
-        $stmt->bindValue(':payerUserId', (int) $subscription['payer_user_id'], SQLITE3_INTEGER);
+        $payerUserId = $subscription['payer_user_id'] ?? null;
+        if ($payerUserId === null || (int) $payerUserId <= 0) {
+            $stmt->bindValue(':payerUserId', null, SQLITE3_NULL);
+        } else {
+            $stmt->bindValue(':payerUserId', (int) $payerUserId, SQLITE3_INTEGER);
+        }
         $stmt->bindValue(':categoryId', (int) $subscription['category_id'], SQLITE3_INTEGER);
         $stmt->bindValue(':notify', (int) $subscription['notify'], SQLITE3_INTEGER);
         $stmt->bindValue(':inactive', (int) $subscription['inactive'], SQLITE3_INTEGER);
@@ -979,7 +1274,12 @@ class Ins_Csv_Import
             $stmt->bindValue(':replacement_subscription_id', (int) $replacement, SQLITE3_INTEGER);
         }
         $stmt->bindValue(':autoRenew', (int) ($subscription['auto_renew'] ?? 0), SQLITE3_INTEGER);
-        $stmt->bindValue(':startDate', (string) ($subscription['start_date'] ?? ''), SQLITE3_TEXT);
+        $startDate = $subscription['start_date'] ?? null;
+        if ($startDate === null || $startDate === '') {
+            $stmt->bindValue(':startDate', null, SQLITE3_NULL);
+        } else {
+            $stmt->bindValue(':startDate', (string) $startDate, SQLITE3_TEXT);
+        }
 
         if (!$stmt->execute()) {
             return 0;
@@ -1042,6 +1342,290 @@ class Ins_Csv_Import
         $parts = explode('-', $value);
 
         return checkdate((int) $parts[1], (int) $parts[2], (int) $parts[0]);
+    }
+
+    /**
+     * @param array<string, string> $raw
+     * @return array<string, string>
+     */
+    private static function insNormalizeImportRow(array $raw): array
+    {
+        if (isset($raw['auto_renew'])) {
+            $renewal = strtolower(trim((string) $raw['auto_renew']));
+            if (in_array($renewal, ['automatic', 'automatisch', 'auto'], true)) {
+                $raw['auto_renew'] = '1';
+            } elseif (in_array($renewal, ['manual', 'manuell'], true)) {
+                $raw['auto_renew'] = '0';
+            }
+        }
+
+        if (isset($raw['inactive'])) {
+            $state = strtolower(trim((string) $raw['inactive']));
+            if (in_array($state, ['disabled', 'deaktiviert', 'inaktiv', 'no', 'nein'], true)) {
+                $raw['inactive'] = '1';
+            } elseif (in_array($state, ['enabled', 'aktiv', 'yes', 'ja'], true)) {
+                $raw['inactive'] = '0';
+            }
+        }
+
+        if (isset($raw['notify'])) {
+            $notify = strtolower(trim((string) $raw['notify']));
+            if (in_array($notify, ['enabled', 'aktiviert', 'yes', 'ja'], true)) {
+                $raw['notify'] = '1';
+            } elseif (in_array($notify, ['disabled', 'deaktiviert', 'no', 'nein'], true)) {
+                $raw['notify'] = '0';
+            }
+        }
+
+        return $raw;
+    }
+
+    /**
+     * @return array{cycle: string, frequency: int}
+     */
+    private static function insParsePaymentCycle(string $value): array
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return ['cycle' => '', 'frequency' => 1];
+        }
+
+        if (preg_match('/^every\s+(\d+)\s+(day|days|week|weeks|month|months|year|years)$/i', $value, $matches)) {
+            $frequency = max(1, (int) $matches[1]);
+            $unit = strtolower($matches[2]);
+            $cycle = 'Monthly';
+            if (str_starts_with($unit, 'day')) {
+                $cycle = 'Daily';
+            } elseif (str_starts_with($unit, 'week')) {
+                $cycle = 'Weekly';
+            } elseif (str_starts_with($unit, 'year')) {
+                $cycle = 'Yearly';
+            }
+
+            return ['cycle' => $cycle, 'frequency' => $frequency];
+        }
+
+        $lower = strtolower($value);
+        if (isset(self::CYCLE_ALIASES[$lower])) {
+            return ['cycle' => self::CYCLE_ALIASES[$lower], 'frequency' => 1];
+        }
+
+        return ['cycle' => $value, 'frequency' => 1];
+    }
+
+    private static function insParsePrice(string $raw): ?float
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return null;
+        }
+
+        $normalized = preg_replace('/[^\d,.\-]/', '', $raw) ?? '';
+        if ($normalized === '' || $normalized === '-') {
+            return null;
+        }
+
+        if (preg_match('/^\d{1,3}(\.\d{3})+(,\d+)?$/', $normalized)) {
+            $normalized = str_replace('.', '', $normalized);
+            $normalized = str_replace(',', '.', $normalized);
+        } elseif (str_contains($normalized, ',') && !str_contains($normalized, '.')) {
+            $normalized = str_replace(',', '.', $normalized);
+        } elseif (str_contains($normalized, ',') && str_contains($normalized, '.')) {
+            $lastComma = strrpos($normalized, ',');
+            $lastDot = strrpos($normalized, '.');
+            if ($lastComma !== false && $lastDot !== false && $lastComma > $lastDot) {
+                $normalized = str_replace('.', '', $normalized);
+                $normalized = str_replace(',', '.', $normalized);
+            } else {
+                $normalized = str_replace(',', '', $normalized);
+            }
+        }
+
+        if (!is_numeric($normalized)) {
+            return null;
+        }
+
+        return (float) $normalized;
+    }
+
+    private static function insParseDate(string $value): ?string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        if (self::insIsIsoDate($value)) {
+            return $value;
+        }
+
+        if (preg_match('/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/', $value, $matches)) {
+            $day = (int) $matches[1];
+            $month = (int) $matches[2];
+            $year = (int) $matches[3];
+            if (checkdate($month, $day, $year)) {
+                return sprintf('%04d-%02d-%02d', $year, $month, $day);
+            }
+        }
+
+        if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $value, $matches)) {
+            $day = (int) $matches[1];
+            $month = (int) $matches[2];
+            $year = (int) $matches[3];
+            if (checkdate($month, $day, $year)) {
+                return sprintf('%04d-%02d-%02d', $year, $month, $day);
+            }
+        }
+
+        $timestamp = strtotime($value);
+
+        return $timestamp !== false ? date('Y-m-d', $timestamp) : null;
+    }
+
+    private static function insAutoDecodeCsvText(string $raw): string
+    {
+        $repaired = self::insRepairMojibake($raw);
+        if (self::insLikelyNeedsWindows1252Decode($repaired) && function_exists('mb_convert_encoding')) {
+            $fromWin = @mb_convert_encoding($repaired, 'UTF-8', 'Windows-1252');
+            if (is_string($fromWin) && $fromWin !== '' && self::insGermanUmlautCount($fromWin) > self::insGermanUmlautCount($repaired)) {
+                return $fromWin;
+            }
+        }
+
+        if (function_exists('mb_check_encoding') && mb_check_encoding($repaired, 'UTF-8')) {
+            return $repaired;
+        }
+
+        if (function_exists('mb_convert_encoding')) {
+            $converted = @mb_convert_encoding($raw, 'UTF-8', 'Windows-1252, ISO-8859-1, UTF-8');
+            if (is_string($converted) && $converted !== '') {
+                return self::insRepairMojibake($converted);
+            }
+        }
+
+        return $repaired;
+    }
+
+    private static function insRepairMojibake(string $value): string
+    {
+        if ($value === '' || !function_exists('mb_convert_encoding')) {
+            return $value;
+        }
+
+        if (!preg_match('/Ã.|Â.|â€|ï¿½|\x{FFFD}/u', $value)) {
+            return $value;
+        }
+
+        $step = @mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
+        if (!is_string($step) || $step === '') {
+            return $value;
+        }
+
+        $fixed = @mb_convert_encoding($step, 'UTF-8', 'ISO-8859-1');
+        if (!is_string($fixed) || $fixed === '') {
+            return $value;
+        }
+
+        if (self::insMojibakeScore($fixed) < self::insMojibakeScore($value)) {
+            return $fixed;
+        }
+
+        return $value;
+    }
+
+    private static function insMojibakeScore(string $value): int
+    {
+        $score = 0;
+        if (preg_match_all('/Ã.|Â.|â€|ï¿½|\x{FFFD}/u', $value, $m)) {
+            $score += count($m[0]) * 5;
+        }
+
+        return $score - self::insGermanUmlautCount($value);
+    }
+
+    private static function insGermanUmlautCount(string $value): int
+    {
+        if (!preg_match_all('/[äöüÄÖÜß]/u', $value, $m)) {
+            return 0;
+        }
+
+        return count($m[0]);
+    }
+
+    private static function insLikelyNeedsWindows1252Decode(string $value): bool
+    {
+        if (self::insGermanUmlautCount($value) > 0) {
+            return false;
+        }
+
+        if (preg_match('/Ã.|ï¿½|\x{FFFD}/u', $value)) {
+            return true;
+        }
+
+        return strlen($value) > 80 && preg_match('/[\x80-\x9f]/', $value) === 1;
+    }
+
+    private static function insEnsureUtf8(string $value): string
+    {
+        if ($value === '') {
+            return '';
+        }
+
+        $value = self::insRepairMojibake($value);
+
+        if (function_exists('mb_check_encoding') && mb_check_encoding($value, 'UTF-8')) {
+            return $value;
+        }
+
+        if (function_exists('mb_convert_encoding')) {
+            $converted = @mb_convert_encoding($value, 'UTF-8', 'Windows-1252, ISO-8859-1, UTF-8');
+            if (is_string($converted) && $converted !== '') {
+                return self::insRepairMojibake($converted);
+            }
+        }
+
+        return $value;
+    }
+
+    private static function insNormalizeMatchKey(string $value): string
+    {
+        $value = self::insEnsureUtf8($value);
+        $value = function_exists('mb_strtolower') ? mb_strtolower(trim($value), 'UTF-8') : strtolower(trim($value));
+        if (class_exists('Transliterator')) {
+            $tr = \Transliterator::createFromRules(
+                ':: Any-Latin; :: Latin-ASCII; :: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;'
+            );
+            if ($tr !== null) {
+                $converted = $tr->transliterate($value);
+                if (is_string($converted)) {
+                    $value = $converted;
+                }
+            }
+        }
+        $value = preg_replace('/[^a-z0-9]+/', '', $value) ?? '';
+
+        return $value;
+    }
+
+    private static function insNamesMatchFuzzy(string $a, string $b): bool
+    {
+        $ka = self::insNormalizeMatchKey($a);
+        $kb = self::insNormalizeMatchKey($b);
+        if ($ka === '' || $kb === '') {
+            return false;
+        }
+        if ($ka === $kb) {
+            return true;
+        }
+
+        $maxLen = max(strlen($ka), strlen($kb));
+        if ($maxLen === 0) {
+            return false;
+        }
+
+        $distance = levenshtein($ka, $kb);
+
+        return ($distance / $maxLen) <= 0.12;
     }
 
     private static function insNullableDate(string $value): ?string

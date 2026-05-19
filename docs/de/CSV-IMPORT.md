@@ -9,8 +9,8 @@ AssureWallos kann **Verträge und Versicherungen** aus einer CSV-Datei importier
 ## Ablauf
 
 1. **Vorlage herunterladen** (Link im Import-Block) oder eigene CSV mit gleichen Spaltennamen erstellen.
-2. CSV-Datei auswählen, optional **Standard-Kategorie** wählen (wenn die Spalte `category` leer ist).
-3. **Vorschau laden** — Tabelle mit Status pro Zeile (OK / Warnung / Fehler).
+2. CSV-Datei auswählen, bei Bedarf **Textkodierung** (z. B. Windows/Excel bei Umlaut-Problemen) und optional **Standard-Kategorie** wählen.
+3. **Vorschau laden** — Tabelle mit Status pro Zeile (OK / Warnung / Fehler); optional **weitere Spalten** einblenden.
 4. Ergebnis prüfen; bei Duplikat-Warnungen optional **„Zeilen mit Duplikat-Warnung trotzdem importieren“** aktivieren.
 5. **Import starten** bestätigen.
 
@@ -33,10 +33,10 @@ Die Vorschau bleibt ca. **30 Minuten** in der Sitzung gespeichert; danach CSV er
 | Spalte | Beschreibung |
 |--------|----------------|
 | `name` | Bezeichnung des Vertrags |
-| `price` | Preis (Dezimalzahl, Komma oder Punkt) |
-| `currency` | Währungscode oder -name (z. B. `EUR`) — bei Leerfeld: Hauptwährung |
-| `cycle` | `Monthly`, `Yearly`, `Weekly`, `Daily` (auch DE: `Monatlich`, `Jährlich`, …) |
-| `next_payment` | Nächste Zahlung, Format **YYYY-MM-DD** |
+| `price` | Preis (Komma oder Punkt, z. B. `15,97`; Währungssymbole wie `€` werden entfernt) |
+| `currency` | Währungscode, -name oder numerische ID — bei Leerfeld: Hauptwährung |
+| `cycle` | `Monthly`, `Yearly`, … (auch DE: `Monatlich`; Wallos-Export: `Payment Cycle` / `Every 2 Months`) |
+| `next_payment` | **YYYY-MM-DD** oder **TT.MM.JJJJ** — bei Leerfeld/ungültig: bleibt leer (Warnung) |
 
 ### Wichtige optionale Spalten (Abo)
 
@@ -45,8 +45,8 @@ Die Vorschau bleibt ca. **30 Minuten** in der Sitzung gespeichert; danach CSV er
 | `frequency` | Standard `1` |
 | `category` | Kategoriename — bei Leerfeld: Standard-Kategorie aus UI |
 | `payment_method` | Name der Zahlungsmethode |
-| `payer` | Name aus „Bezahlt von“ (Haushalt) |
-| `notes`, `url` | Text |
+| `payer` | Name aus „Bezahlt von“ (Haushalt) — bei Leerfeld oder unbekannt: bleibt leer |
+| `notes`, `url` | Text (mehrzeilig in Anführungszeichen, z. B. `"Zeile1\nZeile2"`) |
 | `inactive`, `notify`, `auto_renew` | `1`/`0`, `ja`/`nein` |
 | `start_date`, `cancellation_date` | YYYY-MM-DD |
 
@@ -69,12 +69,17 @@ Die Vorschau bleibt ca. **30 Minuten** in der Sitzung gespeichert; danach CSV er
 
 | Situation | Status | Standard beim Import |
 |-----------|--------|----------------------|
-| Pflichtfeld fehlt / ungültiges Datum | Fehler | Zeile wird **nicht** importiert |
-| Unbekannte Währung | Fehler | — |
+| **Name** fehlt oder **Preis** nicht parsebar | Fehler | Zeile wird **nicht** importiert |
+| **Preis** leer | Warnung | `0` |
+| **next_payment** leer/ungültig | Warnung | Feld bleibt **leer** |
+| **Zyklus** leer/ungültig | Warnung | `Monthly` |
+| **Währung** leer/unbekannt | Warnung | Hauptwährung |
 | Kategorie/Zahlungsmethode unbekannt | Warnung | Standardwert der Instanz |
-| Gleiche **Versicherungsnummer** existiert schon | Warnung | Zeile wird **übersprungen** (optional einschließen) |
-| Gleicher **Name + Preis** existiert schon | Warnung | Zeile wird **übersprungen** (optional einschließen) |
-| Versicherungsart nicht gefunden | Warnung | Vertrag wird ohne `insurance_type_id` angelegt |
+| **Zahler** unbekannt | Warnung | Feld bleibt **leer** |
+| Versicherungsart (Umlaute/Encoding) | Warnung | Abgleich tolerant (ä≈a, kleine Tippfehler) |
+| Gleiche **Versicherungsnummer** existiert schon | Warnung | übersprungen (optional einschließen) |
+| Gleicher **Name + Preis** existiert schon | Warnung | übersprungen (optional einschließen) |
+| Versicherungsart nicht gefunden | Warnung | Vertrag ohne `insurance_type_id` |
 
 ---
 
@@ -89,7 +94,7 @@ Die Vorschau bleibt ca. **30 Minuten** in der Sitzung gespeichert; danach CSV er
 
 ## Unterschied zum Wallos-CSV-Export
 
-Der **Export** unter Profil nutzt andere Spaltenbezeichnungen (englische Anzeigenamen). Für den Import die **AssureWallos-Vorlage** verwenden (`endpoints/insurance/csv_import_template.php`).
+Der **Export** unter Profil nutzt andere Spalten (`Name`, `Payment Cycle`, `Next Payment`, `Price` mit Symbol, …). Der Import erkennt diese Kopfzeilen **teilweise** und mappt sie (z. B. `Payment Cycle` → Zyklus). Zuverlässiger ist die **AssureWallos-Vorlage** (`endpoints/insurance/csv_import_template.php`) mit Semikolon und allen Versicherungsspalten.
 
 ---
 

@@ -15,6 +15,9 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
 
 <script src="scripts/libs/sortable.min.js"></script>
 <script src="scripts/libs/qrcode.min.js"></script>
+<!-- START ASSUREWALLOS MOD -->
+<link rel="stylesheet" href="styles/insurance/form.css?<?= $version ?>">
+<!-- END ASSUREWALLOS MOD -->
 <style>
     .logo-preview:after {
         content: '<?= translate('upload_logo', $i18n) ?>';
@@ -294,12 +297,12 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                         class="secondary-button thin mobile-grow" id="export-csv" <?= $demoMode ? 'disabled title="Not available on Demo Mode"' : '' ?>>
                 </div>
             </div>
-            <?php
-            // START ASSUREWALLOS MOD
-            include __DIR__ . '/includes/insurance/ui/profile_csv_import.php';
-            // END ASSUREWALLOS MOD
-            ?>
         </div>
+        <?php
+        // START ASSUREWALLOS MOD
+        include __DIR__ . '/includes/insurance/ui/profile_csv_import.php';
+        // END ASSUREWALLOS MOD
+        ?>
         <div>
             <?php
             if ($userId != 1 && !$demoMode) {

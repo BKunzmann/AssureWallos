@@ -126,7 +126,11 @@ if ($result) {
 
 foreach ($subscriptions as $subscription) {
   $memberId = $subscription['payer_user_id'];
-  $members[$memberId]['count']++;
+  // START ASSUREWALLOS MOD — leerer Zahler (z. B. CSV-Import)
+  if ($memberId !== null && $memberId !== '' && isset($members[$memberId])) {
+    $members[$memberId]['count']++;
+  }
+  // END ASSUREWALLOS MOD
   $categoryId = $subscription['category_id'];
   $categories[$categoryId]['count']++;
   $paymentMethodId = $subscription['payment_method_id'];
