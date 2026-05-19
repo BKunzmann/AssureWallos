@@ -14,7 +14,7 @@
 services:
   wallos:
     container_name: assurewallos
-    image: bkunzmann/assurewallos:0.2.0
+    image: bkunzmann/assurewallos:0.2.1
     ports:
       - "8283:80/tcp"
     environment:

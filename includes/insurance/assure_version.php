@@ -4,7 +4,7 @@
  * AssureWallos release version (SemVer, ohne führendes „v“).
  * Nur bei AssureWallos-Releases erhöhen — nicht bei reinen Wallos-Upstream-Merges.
  */
-$assure_version = '0.2.0';
+$assure_version = '0.2.1';
 
 /** GitHub-Repository für AssureWallos-Releases (owner/repo). */
 $assure_github_repo = 'BKunzmann/AssureWallos';

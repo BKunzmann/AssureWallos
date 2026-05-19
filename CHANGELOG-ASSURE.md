@@ -3,6 +3,21 @@
 Versionsnummern folgen [Semantic Versioning](https://semver.org/) für **AssureWallos** nur.
 Die Wallos-Basisversion steht in `includes/version.php` und wird bei Upstream-Merges angepasst.
 
+## [0.2.1] - 2026-05-19
+
+### Added
+
+- CSV-**Export** im AssureWallos-Format (`csv_export.php`) für Roundtrip mit dem Import.
+- Import: Textkodierung wählbar, erweiterte Preis-/Datums-Parsing, optionale Vorschau-Spalten.
+
+### Fixed
+
+- Abo-Listen und Statistik bei **leerem Zahler** (`payer_user_id`) nach CSV-Import (keine PHP-Warnungen mehr).
+
+### Changed
+
+- `docker-compose.hub.yaml`: Image-Tag **0.2.1**.
+
 ## [0.2.0] - 2026-05-19
 
 ### Added
