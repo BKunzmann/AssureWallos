@@ -193,7 +193,10 @@ $mobileNavigation = $settings['mobile_nav'] ? "mobile-navigation" : "";
               <?= translate('dashboard', $i18n) ?></a>
             <a href="subscriptions.php" class="mobileNavigationHideOnMobile">
               <?php include "images/siteicons/svg/mobile-menu/subscriptions.php"; ?>
-              <?= translate('subscriptions', $i18n) ?></a>  
+              <?= translate('subscriptions', $i18n) ?></a>
+            <a href="subscriptions_table.php" class="mobileNavigationHideOnMobile" title="Verträge (Tabelle)">
+              <i class="fa-solid fa-table"></i>
+              Verträge (Tabelle)</a>
             <a href="calendar.php" class="mobileNavigationHideOnMobile">
                 <?php include "images/siteicons/svg/mobile-menu/calendar.php"; ?>
                 <?= translate('calendar', $i18n) ?></a>
@@ -235,7 +238,7 @@ $mobileNavigation = $settings['mobile_nav'] ? "mobile-navigation" : "";
   // find out which page is being viewed
   $page = basename($_SERVER['PHP_SELF']);
   $dashboardClass = $page === 'index.php' ? 'active' : '';
-  $subscriptionsClass = $page === 'subscriptions.php' ? 'active' : '';
+  $subscriptionsClass = ($page === 'subscriptions.php' || $page === 'subscriptions_table.php') ? 'active' : '';
   $calendarClass = $page === 'calendar.php' ? 'active' : '';
   $statsClass = $page === 'stats.php' ? 'active' : '';
   $settingsClass = $page === 'settings.php' ? 'active' : '';

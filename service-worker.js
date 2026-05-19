@@ -1,5 +1,5 @@
-const STATIC_CACHE = 'static-cache-v3';
-const PAGES_CACHE = 'pages-cache-v3';
+const STATIC_CACHE = 'static-cache-v4';
+const PAGES_CACHE = 'pages-cache-v4';
 const LOGOS_CACHE = 'logos-cache-v1';
 
 const staticAssets = [

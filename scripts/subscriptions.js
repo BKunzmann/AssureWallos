@@ -514,6 +514,9 @@ function submitFormData(formData, submitButton, endpoint) {
 
 document.addEventListener('DOMContentLoaded', function () {
   const subscriptionForm = document.querySelector("#subs-form");
+  if (!subscriptionForm) {
+    return;
+  }
   const submitButton = document.querySelector("#save-button");
   const endpoint = "endpoints/subscription/add.php";
 
@@ -919,3 +922,20 @@ window.addEventListener('load', () => {
     swipeHintAnimation();
   }
 });
+
+// Globale Bindung für inline onClick-Handler (Kartenliste, Filter, Formular)
+window.toggleOpenSubscription = toggleOpenSubscription;
+window.toggleSortOptions = toggleSortOptions;
+window.addSubscription = addSubscription;
+window.closeAddSubscription = closeAddSubscription;
+window.openEditSubscription = openEditSubscription;
+window.setSortOption = setSortOption;
+window.searchSubscriptions = searchSubscriptions;
+window.clearSearch = clearSearch;
+window.fetchSubscriptions = fetchSubscriptions;
+window.deleteSubscription = deleteSubscription;
+window.cloneSubscription = cloneSubscription;
+window.renewSubscription = renewSubscription;
+window.expandActions = expandActions;
+window.clearFilters = clearFilters;
+window.toggleSubMenu = toggleSubMenu;

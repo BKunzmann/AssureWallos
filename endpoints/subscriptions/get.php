@@ -30,125 +30,23 @@ $formatter = new IntlDateFormatter(
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
 
-  $sort = "next_payment";
-  $sortOrder = $sort;
-  $order = "ASC";
-
-  $params = array();
-  $sql = "SELECT * FROM subscriptions WHERE user_id = :userId";
-
-  if (isset($_GET['categories']) && $_GET['categories'] != "") {
-    $allCategories = explode(',', $_GET['categories']);
-    $placeholders = array_map(function ($idx) {
-      return ":categories{$idx}";
-    }, array_keys($allCategories));
-
-    $sql .= " AND (" . implode(' OR ', array_map(function ($placeholder) {
-      return "category_id = {$placeholder}";
-    }, $placeholders)) . ")";
-
-    foreach ($allCategories as $idx => $category) {
-      $params[":categories{$idx}"] = $category;
-    }
+  // START ASSUREWALLOS MOD
+  require_once __DIR__ . '/../../includes/insurance/subscriptions_list_query.php';
+  $builtList = Ins_Subscriptions_List_Query::insBuild($userId, $settings, $_GET, 'ajax');
+  $sort = $builtList['sort'];
+  $sortOrder = $builtList['sortOrder'];
+  $stmt = $db->prepare($builtList['sql']);
+  foreach ($builtList['params'] as $key => $value) {
+    $stmt->bindValue($key, $value, is_int($value) ? SQLITE3_INTEGER : SQLITE3_TEXT);
   }
-
-  if (isset($_GET['payments']) && $_GET['payments'] !== "") {
-    $allPayments = explode(',', $_GET['payments']);
-    $placeholders = array_map(function ($idx) {
-      return ":payments{$idx}";
-    }, array_keys($allPayments));
-
-    $sql .= " AND (" . implode(' OR ', array_map(function ($placeholder) {
-      return "payment_method_id = {$placeholder}";
-    }, $placeholders)) . ")";
-
-    foreach ($allPayments as $idx => $payment) {
-      $params[":payments{$idx}"] = $payment;
-    }
-  }
-
-  if (isset($_GET['members']) && $_GET['members'] != "") {
-    $allMembers = explode(',', $_GET['members']);
-    $placeholders = array_map(function ($idx) {
-      return ":members{$idx}";
-    }, array_keys($allMembers));
-
-    $sql .= " AND (" . implode(' OR ', array_map(function ($placeholder) {
-      return "payer_user_id = {$placeholder}";
-    }, $placeholders)) . ")";
-
-    foreach ($allMembers as $idx => $member) {
-      $params[":members{$idx}"] = $member;
-    }
-  }
-
-  if (isset($_GET['state']) && $_GET['state'] != "") {
-    $sql .= " AND inactive = :inactive";
-    $params[':inactive'] = $_GET['state'];
-  }
-
-  if (isset($_GET['renewalType']) && $_GET['renewalType'] != "") {
-    $sql .= " AND auto_renew = :auto_renew";
-    $params[':auto_renew'] = $_GET['renewalType'];
-  }
-
-  if (isset($_COOKIE['sortOrder']) && $_COOKIE['sortOrder'] != "") {
-    $sort = $_COOKIE['sortOrder'];
-  }
-
-  $sortOrder = $sort;
-  $allowedSortCriteria = ['name', 'id', 'next_payment', 'price', 'payer_user_id', 'category_id', 'payment_method_id', 'inactive', 'alphanumeric', 'renewal_type'];
-  $order = ($sort == "price" || $sort == "id") ? "DESC" : "ASC";
-
-  if ($sort == "alphanumeric") {
-    $sort = "name";
-  }
-
-  if (!in_array($sort, $allowedSortCriteria)) {
-    $sort = "next_payment";
-  }
-
-  if ($sort == "renewal_type") {
-    $sort = "auto_renew";
-  }
-
-  $orderByClauses = [];
-
-  if ($settings['disabledToBottom'] === 'true') {
-    if (in_array($sort, ["payer_user_id", "category_id", "payment_method_id"])) {
-      $orderByClauses[] = "$sort $order";
-      $orderByClauses[] = "inactive ASC";
-    } else {
-      $orderByClauses[] = "inactive ASC";
-      $orderByClauses[] = "$sort $order";
-    }
-  } else {
-    $orderByClauses[] = "$sort $order";
-    if ($sort != "inactive") {
-      $orderByClauses[] = "inactive ASC";
-    }
-  }
-
-  if ($sort != "next_payment") {
-    $orderByClauses[] = "next_payment ASC";
-  }
-
-  $sql .= " ORDER BY " . implode(", ", $orderByClauses);
-
-  $stmt = $db->prepare($sql);
-  $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
-
-  foreach ($params as $key => $value) {
-    $stmt->bindValue($key, $value);
-  }
-
   $result = $stmt->execute();
+  $subscriptions = [];
   if ($result) {
-    $subscriptions = array();
     while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
       $subscriptions[] = $row;
     }
   }
+  // END ASSUREWALLOS MOD
 
   foreach ($subscriptions as $subscription) {
     if ($subscription['inactive'] == 1 && isset($settings['hideDisabledSubscriptions']) && $settings['hideDisabledSubscriptions'] === 'true') {
