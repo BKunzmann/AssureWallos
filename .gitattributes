@@ -1,0 +1,2 @@
+# Shell-Skripte immer mit LF (Linux/Docker/CI)
+*.sh text eol=lf
