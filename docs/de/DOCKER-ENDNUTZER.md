@@ -196,10 +196,10 @@ environment:
 
 ### Image-Version
 
-Docker-Tag **ohne** `v` (Git-Release-Tag ist `v0.2.1`, Image-Tag ist `0.2.1`):
+Docker-Tag **ohne** `v` (Git-Release-Tag ist `v0.3.0`, Image-Tag ist `0.3.0`):
 
 ```yaml
-image: bkunzmann/assurewallos:0.2.1
+image: bkunzmann/assurewallos:0.3.0
 ```
 
 Ad-hoc-Image (manueller CI-Lauf): `bkunzmann/assurewallos:manual` oder `bkunzmann/assurewallos:sha-<commit>`. Release-Images nur über Git-Tag `vX.Y.Z`.

@@ -3,6 +3,20 @@
 Versionsnummern folgen [Semantic Versioning](https://semver.org/) für **AssureWallos** nur.
 Die Wallos-Basisversion steht in `includes/version.php` und wird bei Upstream-Merges angepasst.
 
+## [0.3.0] - 2026-05-19
+
+### Added
+
+- **Vertragstabellenansicht** (`subscriptions_table.php`): Spalten-Registry mit ~40 Spalten, freie Spaltenwahl, erweiterte Versicherungsfelder.
+- **Sortierung und Gruppierung** über Spaltenköpfe (Klick + Menü); Gruppierung mit Summenzeilen; erweiterte Filter (Versicherungsgruppe/-art, Vertragsstatus) im Filter-Dropdown.
+- **Benannte Ansichten (Presets):** Sort, Gruppe und Spalten pro Nutzer in der DB (`assure_user_table_presets`), einmalige Übernahme aus `localStorage`.
+- Migration `9999_99_08_assure_table_view_presets.php`.
+- Tabellen-**CSV/PDF-Export** mit Gruppenzeilen; erweiterte **Batch-Aktionen** in der Tabellenansicht.
+
+### Changed
+
+- `docker-compose.hub.yaml`: Image-Tag **0.3.0**.
+
 ## [0.2.1] - 2026-05-19
 
 ### Added

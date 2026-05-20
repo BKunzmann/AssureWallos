@@ -68,7 +68,7 @@ For **end users** who only need a running instance (no local build):
 
 | Setting | Value |
 |--------|--------|
-| Image | `bkunzmann/assurewallos:0.2.1` (Docker tag **without** `v`; Git release tag is `v0.2.1`) |
+| Image | `bkunzmann/assurewallos:0.3.0` (Docker tag **without** `v`; Git release tag is `v0.3.0`) |
 | Hub | https://hub.docker.com/r/bkunzmann/assurewallos |
 | Manual CI build | GitHub Actions → „AssureWallos Docker“ → Run workflow (tags `:manual`, `:sha-…`) |
 
@@ -117,7 +117,7 @@ Open the app URL in a browser. On first run, create the admin user, then configu
 
 5. Push the tag: `git push origin vX.Y.Z` — triggers CI (`.github/workflows/assurewallos-docker.yaml`). Secrets: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` (Docker Hub access token with Read & Write).
 
-Published image tags follow the Git tag: `v0.2.1` → Docker tags `0.2.1`, `0.2`, and optionally `latest`. Branch pushes alone do **not** build images; use `workflow_dispatch` for ad-hoc builds.
+Published image tags follow the Git tag: `v0.3.0` → Docker tags `0.3.0`, `0.3`, and optionally `latest`. Branch pushes alone do **not** build images; use `workflow_dispatch` for ad-hoc builds.
 
 ## Based on Wallos
 
