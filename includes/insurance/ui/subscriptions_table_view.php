@@ -50,7 +50,7 @@ if (!isset($assure_table_rows, $assure_table_columns, $assure_table_column_defs)
                   $logoUrl = (string) ($row['logo_url'] ?? '');
                   if ($logoUrl !== '') {
                       ?>
-                    <img src="<?= htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="" class="assure-table-logo" width="32" height="32" loading="lazy">
+                    <img src="<?= htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8') ?>" alt="" class="assure-table-logo" width="40" height="40" loading="lazy">
                       <?php
                   }
                   ?>

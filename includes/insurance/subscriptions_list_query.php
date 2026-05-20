@@ -6,6 +6,29 @@
 
 class Ins_Subscriptions_List_Query
 {
+    /**
+     * Maps Wallos page URL params (subscriptions.php) to AJAX params (get.php / table).
+     *
+     * @param array<string, mixed> $getParams
+     * @return array<string, mixed>
+     */
+    public static function insNormalizeGetParams(array $getParams): array
+    {
+        $normalized = $getParams;
+
+        if (!empty($getParams['member']) && empty($getParams['members'])) {
+            $normalized['members'] = $getParams['member'];
+        }
+        if (!empty($getParams['category']) && empty($getParams['categories'])) {
+            $normalized['categories'] = $getParams['category'];
+        }
+        if (!empty($getParams['payment']) && empty($getParams['payments'])) {
+            $normalized['payments'] = $getParams['payment'];
+        }
+
+        return $normalized;
+    }
+
     private const ALLOWED_SORT = [
         'name', 'id', 'next_payment', 'price', 'payer_user_id',
         'category_id', 'payment_method_id', 'inactive', 'alphanumeric', 'renewal_type',
@@ -19,6 +42,10 @@ class Ins_Subscriptions_List_Query
      */
     public static function insBuild(int $userId, array $settings, array $getParams, string $mode = 'ajax'): array
     {
+        if ($mode === 'ajax') {
+            $getParams = self::insNormalizeGetParams($getParams);
+        }
+
         $params = [];
         $sql = 'SELECT * FROM subscriptions WHERE user_id = :userId';
         $params[':userId'] = $userId;
@@ -66,8 +93,6 @@ class Ins_Subscriptions_List_Query
     /**
      * @param array<string, int|string> $params
      * @param array<string, mixed> $getParams
-     */
-    /**
      * @param array<string, mixed> $settings
      */
     private static function insApplyPageFilters(string &$sql, array &$params, array $getParams, array $settings): void
@@ -118,7 +143,7 @@ class Ins_Subscriptions_List_Query
      */
     private static function insApplyAjaxFilters(string &$sql, array &$params, array $getParams): void
     {
-        if (!empty($getParams['categories'])) {
+        if (isset($getParams['categories']) && $getParams['categories'] !== '') {
             $all = explode(',', (string) $getParams['categories']);
             $parts = [];
             foreach ($all as $idx => $category) {
@@ -129,7 +154,7 @@ class Ins_Subscriptions_List_Query
             $sql .= ' AND (' . implode(' OR ', $parts) . ')';
         }
 
-        if (!empty($getParams['payments'])) {
+        if (isset($getParams['payments']) && $getParams['payments'] !== '') {
             $all = explode(',', (string) $getParams['payments']);
             $parts = [];
             foreach ($all as $idx => $payment) {
@@ -140,7 +165,7 @@ class Ins_Subscriptions_List_Query
             $sql .= ' AND (' . implode(' OR ', $parts) . ')';
         }
 
-        if (!empty($getParams['members'])) {
+        if (isset($getParams['members']) && $getParams['members'] !== '') {
             $all = explode(',', (string) $getParams['members']);
             $parts = [];
             foreach ($all as $idx => $member) {
@@ -156,7 +181,7 @@ class Ins_Subscriptions_List_Query
             $params[':inactive'] = (int) $getParams['state'];
         }
 
-        if (isset($getParams['renewalType']) && $getParams['renewalType'] !== '') {
+        if (isset($getParams['renewalType']) && $getParams['renewalType'] != '') {
             $sql .= ' AND auto_renew = :auto_renew';
             $params[':auto_renew'] = (int) $getParams['renewalType'];
         }

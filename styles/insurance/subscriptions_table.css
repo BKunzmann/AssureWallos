@@ -1,10 +1,6 @@
 /* AssureWallos: subscriptions table view */
 
-.assure-subscriptions-table-page .top-actions {
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
+.assure-toolbar-more-menu .assure-columns-menu .filtermenu-content,
 .assure-columns-menu .filtermenu-content {
   min-width: 18rem;
   max-width: 22rem;
@@ -71,45 +67,93 @@
   overflow-x: auto;
   width: 100%;
   margin-bottom: 1.5rem;
+  background-color: var(--box-background-color);
+  border: 1px solid var(--box-border-color);
+  border-radius: 16px;
+  box-shadow: var(--box-shadow);
 }
 
 .assure-subscriptions-table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  table-layout: auto;
+  color: var(--text-color);
 }
 
+/* Kopfzeile im Wallos-Stil (wie Filter-Titel / Box-UI) */
 .assure-subscriptions-table thead th {
   position: sticky;
   top: 0;
   z-index: 2;
-  background: var(--background-primary, #fff);
-  border-bottom: 2px solid var(--border-color, #ccc);
-  padding: 0.6rem 0.5rem;
+  padding: 12px 0.75rem;
   text-align: left;
   white-space: nowrap;
+  font-weight: 600;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  border-bottom: 1px solid var(--box-border-color);
+  box-shadow: 0 1px 0 var(--box-border-color);
 }
 
 .assure-subscriptions-table tbody td {
-  border-bottom: 1px solid var(--border-color, #e5e5e5);
-  padding: 0.5rem;
+  padding: 10px 0.75rem;
   vertical-align: middle;
+  white-space: nowrap;
+  color: var(--text-color);
+  background-color: var(--box-background-color);
+  border-bottom: 1px solid var(--box-border-color);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.assure-subscriptions-table .assure-col-name {
+  min-width: 10rem;
+  max-width: 22rem;
+  white-space: normal;
+}
+
+.assure-subscriptions-table .assure-col-price,
+.assure-subscriptions-table .assure-col-currency {
+  text-align: right;
 }
 
 .assure-subscriptions-table tbody tr.assure-table-data-row {
   cursor: pointer;
 }
 
-.assure-subscriptions-table tbody tr.assure-table-data-row:hover {
-  background: var(--hover-color, rgba(0, 0, 0, 0.04));
+/* Hover: helle Main-Color-Tönung — nicht --hover-color (wäre dunkelblau + schwarze Schrift) */
+.assure-subscriptions-table tbody tr.assure-table-data-row:hover td {
+  background-color: rgba(var(--main-color-rgb), 0.08);
+  color: var(--text-color);
 }
 
 .assure-subscriptions-table tbody tr.assure-row-hidden {
   display: none;
 }
 
-.assure-subscriptions-table tbody tr.assure-row-selected {
-  background: rgba(var(--main-color-rgb, 59, 130, 246), 0.12);
+.assure-subscriptions-table tbody tr.assure-row-selected td {
+  background-color: rgba(var(--main-color-rgb), 0.12);
+  color: var(--text-color);
+}
+
+.assure-subscriptions-table tbody tr.assure-row-selected:hover td {
+  background-color: rgba(var(--main-color-rgb), 0.16);
+  color: var(--text-color);
+}
+
+.assure-subscriptions-table tbody tr.assure-table-empty-row td {
+  padding: 1.25rem 0.75rem;
+  text-align: center;
+  color: var(--text-color);
+  opacity: 0.75;
+  font-size: 0.95rem;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .assure-subscriptions-table .col-hidden {
@@ -132,19 +176,33 @@
   accent-color: var(--main-color, #3b82f6);
 }
 
-.assure-col-logo {
-  width: 3rem;
+.assure-subscriptions-table .assure-col-logo {
+  width: 3.25rem;
+  min-width: 3.25rem;
+  max-width: 3.25rem;
+  padding-left: 0.2rem;
+  padding-right: 0.2rem;
   text-align: center;
+  box-sizing: border-box;
 }
 
+.assure-subscriptions-table thead th.assure-col-logo {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+/* Wie Kachelansicht (.subscription .logo img): nur Logo, kein Kasten/Hintergrund */
 .assure-table-logo {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
+  max-height: 40px;
   object-fit: contain;
-  border-radius: 6px;
   margin: 0 auto;
-  background: var(--background-secondary, #f4f4f4);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 @media print {

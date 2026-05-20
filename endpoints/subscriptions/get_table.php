@@ -33,7 +33,7 @@ $assure_table_rows = $loaded['displayRows'];
 $assure_table_columns = $columnIds;
 $assure_table_column_defs = $columnDefs;
 
-if ($loaded['subscriptions'] === [] && $assure_table_rows === []) {
+if (count($loaded['subscriptions']) === 0) {
     ?>
     <div class="no-matching-subscriptions">
       <p>Keine passenden Verträge.</p>

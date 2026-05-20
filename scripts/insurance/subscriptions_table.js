@@ -131,6 +131,23 @@ function assureTableCloseColumnsPanel() {
   if (panel) panel.classList.remove("is-open");
 }
 
+function assureTableToggleMorePanel() {
+  const panel = document.getElementById("assure-toolbar-more-panel");
+  if (!panel) return;
+  panel.classList.toggle("is-open");
+  const toggle = document.getElementById("assure-toolbar-more-toggle");
+  if (toggle) {
+    toggle.setAttribute("aria-expanded", panel.classList.contains("is-open") ? "true" : "false");
+  }
+}
+
+function assureTableCloseMorePanel() {
+  const panel = document.getElementById("assure-toolbar-more-panel");
+  if (panel) panel.classList.remove("is-open");
+  const toggle = document.getElementById("assure-toolbar-more-toggle");
+  if (toggle) toggle.setAttribute("aria-expanded", "false");
+}
+
 function assureTableBuildFilterQuery(baseUrl) {
   let url = baseUrl;
   const append = (key, val) => {
@@ -342,20 +359,73 @@ function assureTableRunBatch() {
     });
 }
 
+/** Clientseitige Suche wie searchSubscriptions() in subscriptions.js (Kartenansicht). */
 function assureTableSearch() {
-  const q = (document.getElementById("search")?.value || "").trim().toLowerCase();
+  const searchInput = document.querySelector("#search");
+  if (!searchInput) return;
+
+  const searchContainer = searchInput.parentElement;
+  const searchTerm = searchInput.value.trim().toLowerCase();
+
+  if (searchTerm.length > 0) {
+    searchContainer?.classList.add("has-text");
+  } else {
+    searchContainer?.classList.remove("has-text");
+  }
+
   document.querySelectorAll(".assure-table-data-row").forEach((row) => {
     const name = (row.getAttribute("data-name") || "").toLowerCase();
     const policy = (row.getAttribute("data-policy") || "").toLowerCase();
-    const match = !q || name.includes(q) || policy.includes(q);
+    const match = !searchTerm || name.includes(searchTerm) || policy.includes(searchTerm);
     row.classList.toggle("assure-row-hidden", !match);
   });
 }
 
-function assureTableClearSearch() {
-  const search = document.getElementById("search");
-  if (search) search.value = "";
-  assureTableSearch();
+function assureTableHydrateFiltersFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  let hasFilter = false;
+
+  const applyList = (ajaxKey, pageKey, dataAttr) => {
+    const raw = params.get(ajaxKey) || params.get(pageKey);
+    if (!raw) return;
+    const ids = raw.split(",").filter(Boolean);
+    if (ids.length === 0) return;
+    activeFilters[ajaxKey] = ids;
+    hasFilter = true;
+    ids.forEach((id) => {
+      const item = document.querySelector(`.filter-item[${dataAttr}="${id}"]`);
+      if (item) item.classList.add("selected");
+    });
+  };
+
+  applyList("categories", "category", "data-categoryid");
+  applyList("members", "member", "data-memberid");
+  applyList("payments", "payment", "data-paymentid");
+
+  if (params.has("state")) {
+    const state = params.get("state");
+    activeFilters["state"] = state;
+    hasFilter = true;
+    document.querySelectorAll('.filter-item[data-state]').forEach((el) => {
+      el.classList.toggle("selected", el.getAttribute("data-state") === state);
+    });
+  }
+
+  if (params.has("renewalType")) {
+    const renewalType = params.get("renewalType");
+    activeFilters["renewalType"] = renewalType;
+    hasFilter = true;
+    document.querySelectorAll('.filter-item[data-renewaltype]').forEach((el) => {
+      el.classList.toggle("selected", el.getAttribute("data-renewaltype") === renewalType);
+    });
+  }
+
+  const clearBtn = document.querySelector("#clear-filters");
+  if (clearBtn) {
+    clearBtn.classList.toggle("hide", !hasFilter);
+  }
+
+  return hasFilter;
 }
 
 function assureTableExportCsv() {
@@ -427,21 +497,40 @@ document.addEventListener("DOMContentLoaded", () => {
     assureFetchSubscriptionsTable();
   }
 
-  const origFetch = typeof fetchSubscriptions === "function" ? fetchSubscriptions : null;
-  if (origFetch) {
-    window.fetchSubscriptions = function () {
-      assureFetchSubscriptionsTable();
-    };
+  window.fetchSubscriptions = function () {
+    assureFetchSubscriptionsTable();
+  };
+
+  window.searchSubscriptions = function () {
+    assureTableSearch();
+  };
+
+  window.clearSearch = function () {
+    const searchInput = document.querySelector("#search");
+    if (searchInput) searchInput.value = "";
+    assureTableSearch();
+  };
+
+  if (assureTableHydrateFiltersFromUrl()) {
+    assureFetchSubscriptionsTable();
   }
+
+  document.getElementById("assure-toolbar-more-toggle")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    assureTableCloseColumnsPanel();
+    assureTableToggleMorePanel();
+  });
 
   document.getElementById("assure-columns-toggle")?.addEventListener("click", (e) => {
     e.stopPropagation();
+    assureTableCloseMorePanel();
     assureTableToggleColumnsPanel();
   });
 
   document.addEventListener("click", (e) => {
-    const menu = document.querySelector(".assure-columns-menu");
-    if (menu && !menu.contains(e.target)) {
+    const moreMenu = document.querySelector(".assure-toolbar-more-menu");
+    if (moreMenu && !moreMenu.contains(e.target)) {
+      assureTableCloseMorePanel();
       assureTableCloseColumnsPanel();
     }
   });
@@ -474,6 +563,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("assure-batch-run")?.addEventListener("click", assureTableRunBatch);
   document.getElementById("assure-batch-clear")?.addEventListener("click", assureTableClearSelection);
-  document.getElementById("assure-export-csv")?.addEventListener("click", assureTableExportCsv);
-  document.getElementById("assure-export-pdf")?.addEventListener("click", assureTableExportPdf);
+  document.getElementById("assure-export-csv")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    assureTableCloseMorePanel();
+    assureTableExportCsv();
+  });
+  document.getElementById("assure-export-pdf")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    assureTableCloseMorePanel();
+    assureTableExportPdf();
+  });
 });

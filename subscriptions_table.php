@@ -46,6 +46,7 @@ if (Ins_Repository::insTaxonomyReady($db)) {
 $headerClass = count($subscriptions) > 0 ? 'main-actions' : 'main-actions hidden';
 ?>
 <link rel="stylesheet" href="styles/insurance/form.css?<?= $version ?>">
+<link rel="stylesheet" href="styles/insurance/subscriptions_toolbar.css?<?= $version ?>">
 <link rel="stylesheet" href="styles/insurance/subscriptions_table.css?<?= $version ?>">
 <style>
   .logo-preview:after {
@@ -54,57 +55,7 @@ $headerClass = count($subscriptions) > 0 ? 'main-actions' : 'main-actions hidden
 </style>
 
 <section class="contain assure-subscriptions-table-page" id="assure-subscriptions-table-page">
-  <header class="<?= $headerClass ?>" id="main-actions">
-    <button type="button" class="button" onClick="addSubscription()">
-      <i class="fa-solid fa-circle-plus"></i>
-      <?= translate('new_subscription', $i18n) ?>
-    </button>
-    <a href="subscriptions.php" class="button secondary-button">
-      <i class="fa-solid fa-table-cells"></i>
-      <span class="mobileNavigationHideOnMobile">Kartenansicht</span>
-    </a>
-    <div class="top-actions">
-      <div class="search">
-        <input type="text" autocomplete="off" name="search" id="search" placeholder="<?= translate('search', $i18n) ?>"
-          onkeyup="assureTableSearch()" />
-        <span class="fa-solid fa-magnifying-glass search-icon"></span>
-        <span class="fa-solid fa-xmark clear-search" onClick="assureTableClearSearch()"></span>
-      </div>
-
-      <div class="filtermenu on-dashboard">
-        <button type="button" class="button secondary-button" id="filtermenu-button" title="<?= translate('filter', $i18n) ?>">
-          <i class="fa-solid fa-filter"></i>
-        </button>
-        <?php include 'includes/filters_menu.php'; ?>
-      </div>
-
-      <div class="sort-container">
-        <button type="button" class="button secondary-button" value="Sort" onClick="toggleSortOptions()" id="sort-button"
-          title="<?= translate('sort', $i18n) ?>">
-          <i class="fa-solid fa-arrow-down-wide-short"></i>
-        </button>
-        <?php include 'includes/sort_options.php'; ?>
-      </div>
-
-      <div class="filtermenu assure-columns-menu on-dashboard">
-        <button type="button" class="button secondary-button" id="assure-columns-toggle" title="Spalten">
-          <i class="fa-solid fa-columns"></i>
-          <span class="mobileNavigationHideOnMobile">Spalten</span>
-        </button>
-        <div class="filtermenu-content" id="assure-columns-panel">
-          <div class="filter-title">Spalten anzeigen</div>
-          <div class="assure-columns-actions">
-            <button type="button" class="secondary-button thin" id="assure-columns-default">Standard</button>
-            <button type="button" class="secondary-button thin" id="assure-columns-all">Alle</button>
-          </div>
-          <div class="assure-columns-groups" id="assure-columns-list"></div>
-        </div>
-      </div>
-
-      <input type="button" class="button secondary-button" id="assure-export-csv" value="CSV">
-      <input type="button" class="button secondary-button" id="assure-export-pdf" value="PDF">
-    </div>
-  </header>
+  <?php include __DIR__ . '/includes/insurance/ui/subscriptions_table_toolbar.php'; ?>
 
   <div id="assure-batch-bar" class="assure-batch-bar hide" hidden>
     <span id="assure-batch-count">0 ausgewählt</span>
