@@ -763,11 +763,63 @@ document.querySelectorAll('.filter-item').forEach(function (item) {
         });
         this.classList.add('selected');
       }
+    // START ASSUREWALLOS MOD — table view insurance filters
+    } else if (document.getElementById('assure-subscriptions-table-page') && this.hasAttribute('data-insurance-only')) {
+      const val = this.getAttribute('data-insurance-only');
+      if (typeof activeFilters['is_insurance'] === 'undefined') activeFilters['is_insurance'] = '';
+      if (activeFilters['is_insurance'] === val) {
+        activeFilters['is_insurance'] = '';
+        this.classList.remove('selected');
+      } else {
+        activeFilters['is_insurance'] = val;
+        document.querySelectorAll('[data-insurance-only]').forEach((el) => {
+          el.classList.toggle('selected', el.getAttribute('data-insurance-only') === val);
+        });
+      }
+    } else if (document.getElementById('assure-subscriptions-table-page') && this.hasAttribute('data-insurance-group')) {
+      if (!activeFilters['insurance_groups']) activeFilters['insurance_groups'] = [];
+      const id = this.getAttribute('data-insurance-group');
+      const idx = activeFilters['insurance_groups'].indexOf(id);
+      if (idx >= 0) {
+        activeFilters['insurance_groups'].splice(idx, 1);
+        this.classList.remove('selected');
+      } else {
+        activeFilters['insurance_groups'].push(id);
+        this.classList.add('selected');
+      }
+    } else if (document.getElementById('assure-subscriptions-table-page') && this.hasAttribute('data-insurance-type')) {
+      if (!activeFilters['insurance_types']) activeFilters['insurance_types'] = [];
+      const id = this.getAttribute('data-insurance-type');
+      const idx = activeFilters['insurance_types'].indexOf(id);
+      if (idx >= 0) {
+        activeFilters['insurance_types'].splice(idx, 1);
+        this.classList.remove('selected');
+      } else {
+        activeFilters['insurance_types'].push(id);
+        this.classList.add('selected');
+      }
+    } else if (document.getElementById('assure-subscriptions-table-page') && this.hasAttribute('data-contract-status')) {
+      if (!activeFilters['contract_status']) activeFilters['contract_status'] = [];
+      const status = this.getAttribute('data-contract-status');
+      const idx = activeFilters['contract_status'].indexOf(status);
+      if (idx >= 0) {
+        activeFilters['contract_status'].splice(idx, 1);
+        this.classList.remove('selected');
+      } else {
+        activeFilters['contract_status'].push(status);
+        this.classList.add('selected');
+      }
     }
+    // END ASSUREWALLOS MOD
 
     if (activeFilters['categories'].length > 0 || activeFilters['members'].length > 0 ||
        activeFilters['payments'].length > 0 || activeFilters['state'] !== "" || 
-       activeFilters['renewalType'] !== "") {
+       activeFilters['renewalType'] !== "" ||
+       (document.getElementById('assure-subscriptions-table-page') && (
+         activeFilters['is_insurance'] || (activeFilters['insurance_groups'] && activeFilters['insurance_groups'].length) ||
+         (activeFilters['insurance_types'] && activeFilters['insurance_types'].length) ||
+         (activeFilters['contract_status'] && activeFilters['contract_status'].length)
+       ))) {
       document.querySelector('#clear-filters').classList.remove('hide');
     } else {
       document.querySelector('#clear-filters').classList.add('hide');

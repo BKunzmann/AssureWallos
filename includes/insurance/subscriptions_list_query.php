@@ -1,9 +1,11 @@
 <?php
 
+require_once __DIR__ . '/ins_repository.php';
+require_once __DIR__ . '/subscriptions_table_dimensions.php';
+
 /**
  * Shared subscription list SQL for cards (subscriptions.php) and table view (AssureWallos).
  */
-
 class Ins_Subscriptions_List_Query
 {
     /**
@@ -29,34 +31,46 @@ class Ins_Subscriptions_List_Query
         return $normalized;
     }
 
-    private const ALLOWED_SORT = [
-        'name', 'id', 'next_payment', 'price', 'payer_user_id',
-        'category_id', 'payment_method_id', 'inactive', 'alphanumeric', 'renewal_type',
-    ];
-
     /**
      * @param array<string, mixed> $settings
-     * @param array<string, mixed> $getParams $_GET or equivalent
-     * @param string $mode 'page' (subscriptions.php) or 'ajax' (get.php / table)
-     * @return array{sql: string, params: array<string, int|string>, sort: string, sortOrder: string, order: string}
+     * @param array<string, mixed> $getParams
+     * @param array{with_insurance?: bool, db?: SQLite3} $options
+     * @return array{sql: string, params: array<string, int|string>, sort: string, sortOrder: string, order: string, group: string, group2: string}
      */
-    public static function insBuild(int $userId, array $settings, array $getParams, string $mode = 'ajax'): array
+    public static function insBuild(int $userId, array $settings, array $getParams, string $mode = 'ajax', array $options = []): array
     {
         if ($mode === 'ajax') {
             $getParams = self::insNormalizeGetParams($getParams);
         }
 
+        $group = Ins_Subscriptions_Table_Dimensions::insValidateGroupKey((string) ($getParams['group'] ?? 'none')) ?? 'none';
+        $group2Raw = (string) ($getParams['group2'] ?? '');
+        $group2 = $group2Raw !== ''
+            ? (Ins_Subscriptions_Table_Dimensions::insValidateGroupKey($group2Raw) ?? 'none')
+            : 'none';
+
+        $withInsurance = ($options['with_insurance'] ?? false)
+            && isset($options['db'])
+            && Ins_Repository::insSchemaReady($options['db']);
+
+        $sortInfo = self::insResolveSort($settings, $getParams, $withInsurance);
+
         $params = [];
-        $sql = 'SELECT * FROM subscriptions WHERE user_id = :userId';
+        if ($withInsurance) {
+            $sql = 'SELECT s.* FROM subscriptions s
+                LEFT JOIN assure_insurance_details d ON d.subscription_id = s.id
+                WHERE s.user_id = :userId';
+        } else {
+            $sql = 'SELECT * FROM subscriptions WHERE user_id = :userId';
+        }
         $params[':userId'] = $userId;
 
         if ($mode === 'page') {
-            self::insApplyPageFilters($sql, $params, $getParams, $settings);
+            self::insApplyPageFilters($sql, $params, $getParams, $settings, $withInsurance);
         } else {
-            self::insApplyAjaxFilters($sql, $params, $getParams);
+            self::insApplyAjaxFilters($sql, $params, $getParams, $withInsurance, $options['db'] ?? null, $userId);
         }
 
-        $sortInfo = self::insResolveSort($settings, $getParams);
         $sql .= ' ORDER BY ' . implode(', ', $sortInfo['orderByClauses']);
 
         return [
@@ -65,17 +79,21 @@ class Ins_Subscriptions_List_Query
             'sort' => $sortInfo['sort'],
             'sortOrder' => $sortInfo['sortOrder'],
             'order' => $sortInfo['order'],
+            'group' => $group,
+            'group2' => $group2,
         ];
     }
 
     /**
      * @param array<string, mixed> $settings
      * @param array<string, mixed> $getParams
+     * @param array{with_insurance?: bool, db?: SQLite3} $options
      * @return list<array<string, mixed>>
      */
-    public static function insFetchRows(SQLite3 $db, int $userId, array $settings, array $getParams, string $mode = 'ajax'): array
+    public static function insFetchRows(SQLite3 $db, int $userId, array $settings, array $getParams, string $mode = 'ajax', array $options = []): array
     {
-        $built = self::insBuild($userId, $settings, $getParams, $mode);
+        $options['db'] = $db;
+        $built = self::insBuild($userId, $settings, $getParams, $mode, $options);
         $stmt = $db->prepare($built['sql']);
         foreach ($built['params'] as $key => $value) {
             $stmt->bindValue($key, $value, is_int($value) ? SQLITE3_INTEGER : SQLITE3_TEXT);
@@ -95,7 +113,7 @@ class Ins_Subscriptions_List_Query
      * @param array<string, mixed> $getParams
      * @param array<string, mixed> $settings
      */
-    private static function insApplyPageFilters(string &$sql, array &$params, array $getParams, array $settings): void
+    private static function insApplyPageFilters(string &$sql, array &$params, array $getParams, array $settings, bool $withInsurance): void
     {
         if (isset($getParams['member']) && $getParams['member'] !== '') {
             $memberIds = explode(',', (string) $getParams['member']);
@@ -105,7 +123,8 @@ class Ins_Subscriptions_List_Query
                 $placeholders[] = $ph;
                 $params[$ph] = (int) $memberId;
             }
-            $sql .= ' AND payer_user_id IN (' . implode(',', $placeholders) . ')';
+            $prefix = $withInsurance ? 's.' : '';
+            $sql .= ' AND ' . $prefix . 'payer_user_id IN (' . implode(',', $placeholders) . ')';
         }
 
         if (isset($getParams['category']) && $getParams['category'] !== '') {
@@ -116,7 +135,8 @@ class Ins_Subscriptions_List_Query
                 $placeholders[] = $ph;
                 $params[$ph] = (int) $categoryId;
             }
-            $sql .= ' AND category_id IN (' . implode(',', $placeholders) . ')';
+            $prefix = $withInsurance ? 's.' : '';
+            $sql .= ' AND ' . $prefix . 'category_id IN (' . implode(',', $placeholders) . ')';
         }
 
         if (isset($getParams['payment']) && $getParams['payment'] !== '') {
@@ -127,12 +147,14 @@ class Ins_Subscriptions_List_Query
                 $placeholders[] = $ph;
                 $params[$ph] = (int) $paymentId;
             }
-            $sql .= ' AND payment_method_id IN (' . implode(',', $placeholders) . ')';
+            $prefix = $withInsurance ? 's.' : '';
+            $sql .= ' AND ' . $prefix . 'payment_method_id IN (' . implode(',', $placeholders) . ')';
         }
 
         $hideDisabled = ($settings['hideDisabledSubscriptions'] ?? '') === 'true';
         if (!$hideDisabled && isset($getParams['state']) && $getParams['state'] !== '') {
-            $sql .= ' AND inactive = :inactive';
+            $prefix = $withInsurance ? 's.' : '';
+            $sql .= ' AND ' . $prefix . 'inactive = :inactive';
             $params[':inactive'] = (int) $getParams['state'];
         }
     }
@@ -141,14 +163,24 @@ class Ins_Subscriptions_List_Query
      * @param array<string, int|string> $params
      * @param array<string, mixed> $getParams
      */
-    private static function insApplyAjaxFilters(string &$sql, array &$params, array $getParams): void
-    {
+    private static function insApplyAjaxFilters(
+        string &$sql,
+        array &$params,
+        array $getParams,
+        bool $withInsurance,
+        ?SQLite3 $db,
+        int $userId
+    ): void {
+        $col = static function (string $field) use ($withInsurance): string {
+            return $withInsurance ? 's.' . $field : $field;
+        };
+
         if (isset($getParams['categories']) && $getParams['categories'] !== '') {
             $all = explode(',', (string) $getParams['categories']);
             $parts = [];
             foreach ($all as $idx => $category) {
                 $ph = ":categories{$idx}";
-                $parts[] = "category_id = {$ph}";
+                $parts[] = $col('category_id') . " = {$ph}";
                 $params[$ph] = (int) $category;
             }
             $sql .= ' AND (' . implode(' OR ', $parts) . ')';
@@ -159,7 +191,7 @@ class Ins_Subscriptions_List_Query
             $parts = [];
             foreach ($all as $idx => $payment) {
                 $ph = ":payments{$idx}";
-                $parts[] = "payment_method_id = {$ph}";
+                $parts[] = $col('payment_method_id') . " = {$ph}";
                 $params[$ph] = (int) $payment;
             }
             $sql .= ' AND (' . implode(' OR ', $parts) . ')';
@@ -170,20 +202,116 @@ class Ins_Subscriptions_List_Query
             $parts = [];
             foreach ($all as $idx => $member) {
                 $ph = ":members{$idx}";
-                $parts[] = "payer_user_id = {$ph}";
+                $parts[] = $col('payer_user_id') . " = {$ph}";
                 $params[$ph] = (int) $member;
             }
             $sql .= ' AND (' . implode(' OR ', $parts) . ')';
         }
 
         if (isset($getParams['state']) && $getParams['state'] !== '') {
-            $sql .= ' AND inactive = :inactive';
+            $sql .= ' AND ' . $col('inactive') . ' = :inactive';
             $params[':inactive'] = (int) $getParams['state'];
         }
 
         if (isset($getParams['renewalType']) && $getParams['renewalType'] != '') {
-            $sql .= ' AND auto_renew = :auto_renew';
+            $sql .= ' AND ' . $col('auto_renew') . ' = :auto_renew';
             $params[':auto_renew'] = (int) $getParams['renewalType'];
+        }
+
+        if ($withInsurance) {
+            if (isset($getParams['is_insurance']) && $getParams['is_insurance'] !== '') {
+                $sql .= ' AND s.is_insurance = :is_insurance';
+                $params[':is_insurance'] = (int) $getParams['is_insurance'];
+            }
+
+            if (!empty($getParams['insurance_types'])) {
+                $ids = array_filter(array_map('intval', explode(',', (string) $getParams['insurance_types'])));
+                if ($ids !== []) {
+                    $parts = [];
+                    foreach ($ids as $idx => $typeId) {
+                        $ph = ":insType{$idx}";
+                        $parts[] = $ph;
+                        $params[$ph] = $typeId;
+                    }
+                    $sql .= ' AND d.insurance_type_id IN (' . implode(',', $parts) . ')';
+                }
+            }
+
+            if (!empty($getParams['insurance_groups']) && $db !== null && Ins_Repository::insTaxonomyReady($db)) {
+                $groupIds = array_filter(array_map('intval', explode(',', (string) $getParams['insurance_groups'])));
+                if ($groupIds !== []) {
+                    $typeIds = [];
+                    $res = $db->query(
+                        'SELECT id FROM assure_insurance_types WHERE group_id IN (' . implode(',', $groupIds) . ')'
+                    );
+                    while ($res && ($row = $res->fetchArray(SQLITE3_ASSOC))) {
+                        $typeIds[] = (int) $row['id'];
+                    }
+                    if ($typeIds === []) {
+                        $sql .= ' AND 1=0';
+                    } else {
+                        $parts = [];
+                        foreach ($typeIds as $idx => $typeId) {
+                            $ph = ":insGrpType{$idx}";
+                            $parts[] = $ph;
+                            $params[$ph] = $typeId;
+                        }
+                        $sql .= ' AND d.insurance_type_id IN (' . implode(',', $parts) . ')';
+                    }
+                }
+            }
+
+            if (!empty($getParams['contract_status'])) {
+                $statuses = array_filter(array_map('trim', explode(',', (string) $getParams['contract_status'])));
+                if ($statuses !== []) {
+                    $parts = [];
+                    foreach ($statuses as $idx => $status) {
+                        $ph = ":contractStatus{$idx}";
+                        $parts[] = "d.contract_status = {$ph}";
+                        $params[$ph] = $status;
+                    }
+                    $sql .= ' AND (' . implode(' OR ', $parts) . ')';
+                }
+            }
+
+            if (!empty($getParams['cancellation_status'])) {
+                $statuses = array_filter(array_map('trim', explode(',', (string) $getParams['cancellation_status'])));
+                if ($statuses !== []) {
+                    $parts = [];
+                    foreach ($statuses as $idx => $status) {
+                        $ph = ":cancelStatus{$idx}";
+                        $parts[] = "d.cancellation_status = {$ph}";
+                        $params[$ph] = $status;
+                    }
+                    $sql .= ' AND (' . implode(' OR ', $parts) . ')';
+                }
+            }
+
+            if (!empty($getParams['next_payment_month'])) {
+                $months = array_filter(explode(',', (string) $getParams['next_payment_month']));
+                if ($months !== []) {
+                    $parts = [];
+                    foreach ($months as $idx => $month) {
+                        $ph = ":payMonth{$idx}";
+                        $parts[] = "strftime('%Y-%m', s.next_payment) = {$ph}";
+                        $params[$ph] = $month;
+                    }
+                    $sql .= ' AND (' . implode(' OR ', $parts) . ')';
+                }
+            }
+
+            if (!empty($getParams['q'])) {
+                $q = '%' . str_replace(['%', '_'], ['\\%', '\\_'], (string) $getParams['q']) . '%';
+                $params[':searchQ'] = $q;
+                $sql .= ' AND (
+                    s.name LIKE :searchQ ESCAPE \'\\\'
+                    OR d.policy_number LIKE :searchQ ESCAPE \'\\\'
+                    OR d.insurer_name LIKE :searchQ ESCAPE \'\\\'
+                    OR d.broker_name LIKE :searchQ ESCAPE \'\\\'
+                    OR d.tariff_name LIKE :searchQ ESCAPE \'\\\'
+                    OR s.notes LIKE :searchQ ESCAPE \'\\\'
+                )';
+            }
         }
     }
 
@@ -192,49 +320,74 @@ class Ins_Subscriptions_List_Query
      * @param array<string, mixed> $getParams
      * @return array{sort: string, sortOrder: string, order: string, orderByClauses: list<string>}
      */
-    private static function insResolveSort(array $settings, array $getParams): array
+    private static function insResolveSort(array $settings, array $getParams, bool $withInsurance = false): array
     {
         $sort = 'next_payment';
-        if (!empty($getParams['sortOrder_cookie'])) {
-            $sort = (string) $getParams['sortOrder_cookie'];
+        if (!empty($getParams['sort'])) {
+            $validated = Ins_Subscriptions_Table_Dimensions::insValidateSortKey((string) $getParams['sort']);
+            if ($validated !== null) {
+                $sort = $validated;
+            }
+        } elseif (!empty($getParams['sortOrder_cookie'])) {
+            $validated = Ins_Subscriptions_Table_Dimensions::insValidateSortKey((string) $getParams['sortOrder_cookie']);
+            $sort = $validated ?? 'next_payment';
         } elseif (isset($_COOKIE['sortOrder']) && $_COOKIE['sortOrder'] !== '') {
-            $sort = (string) $_COOKIE['sortOrder'];
+            $validated = Ins_Subscriptions_Table_Dimensions::insValidateSortKey((string) $_COOKIE['sortOrder']);
+            $sort = $validated ?? 'next_payment';
         }
 
         $sortOrder = $sort;
-        $order = ($sort === 'price' || $sort === 'id') ? 'DESC' : 'ASC';
+        $order = 'ASC';
+        if (!empty($getParams['sortOrder_dir'])) {
+            $dir = strtoupper((string) $getParams['sortOrder_dir']);
+            $order = $dir === 'DESC' ? 'DESC' : 'ASC';
+        } elseif ($sort === 'price' || $sort === 'id') {
+            $order = 'DESC';
+        }
 
         if ($sort === 'alphanumeric') {
             $sort = 'name';
         }
-        if (!in_array($sortOrder, self::ALLOWED_SORT, true)) {
+
+        $sortSql = Ins_Subscriptions_Table_Dimensions::insSortSqlForKey($sort);
+        if ($sortSql === null) {
             $sort = 'next_payment';
             $sortOrder = $sort;
-        }
-        if ($sort === 'renewal_type') {
-            $sort = 'auto_renew';
+            $sortSql = 'next_payment';
+            $order = 'ASC';
         }
 
+        if (!$withInsurance) {
+            $sortSql = preg_replace('/^s\./', '', $sortSql) ?? $sortSql;
+            $sortSql = preg_replace('/^d\./', 'id', $sortSql) ?? $sortSql;
+            if (str_starts_with($sortSql, 'id') && $sort !== 'id') {
+                $sortSql = 'next_payment';
+            }
+        }
+
+        $inactiveCol = $withInsurance ? 's.inactive' : 'inactive';
+        $nextCol = $withInsurance ? 's.next_payment' : 'next_payment';
         $orderByClauses = [];
         $disabledBottom = ($settings['disabledToBottom'] ?? '') === 'true';
+        $sortField = $sortSql;
 
         if ($disabledBottom) {
-            if (in_array($sort, ['payer_user_id', 'category_id', 'payment_method_id'], true)) {
-                $orderByClauses[] = "{$sort} {$order}";
-                $orderByClauses[] = 'inactive ASC';
+            if (in_array($sort, ['payer', 'category', 'payment_method'], true)) {
+                $orderByClauses[] = "{$sortField} {$order}";
+                $orderByClauses[] = "{$inactiveCol} ASC";
             } else {
-                $orderByClauses[] = 'inactive ASC';
-                $orderByClauses[] = "{$sort} {$order}";
+                $orderByClauses[] = "{$inactiveCol} ASC";
+                $orderByClauses[] = "{$sortField} {$order}";
             }
         } else {
-            $orderByClauses[] = "{$sort} {$order}";
+            $orderByClauses[] = "{$sortField} {$order}";
             if ($sort !== 'inactive') {
-                $orderByClauses[] = 'inactive ASC';
+                $orderByClauses[] = "{$inactiveCol} ASC";
             }
         }
 
-        if ($sort !== 'next_payment') {
-            $orderByClauses[] = 'next_payment ASC';
+        if ($sort !== 'next_payment' && $sort !== 'next_payment_month') {
+            $orderByClauses[] = "{$nextCol} ASC";
         }
 
         return [

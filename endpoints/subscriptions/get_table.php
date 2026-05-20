@@ -26,12 +26,15 @@ $loaded = Ins_Subscriptions_Table_Bootstrap::insLoad(
     $members,
     $cycles,
     $currencies,
-    (int) $mainCurrencyId
+    (int) $mainCurrencyId,
+    $columnIds
 );
 
-$assure_table_rows = $loaded['displayRows'];
+$assure_table_render_blocks = $loaded['renderBlocks'];
 $assure_table_columns = $columnIds;
 $assure_table_column_defs = $columnDefs;
+$assure_table_sort = $loaded['sort'];
+$assure_table_sort_dir = $loaded['sortDir'];
 
 if (count($loaded['subscriptions']) === 0) {
     ?>

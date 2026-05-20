@@ -24,7 +24,10 @@ if (!isset($headerClass)) {
           <button type="button" class="button secondary-button" id="filtermenu-button" title="<?= translate('filter', $i18n) ?>">
             <i class="fa-solid fa-filter"></i>
           </button>
-          <?php include __DIR__ . '/../../filters_menu.php'; ?>
+          <?php
+          $assure_include_table_filter_extra = true;
+          include __DIR__ . '/../../filters_menu.php';
+          ?>
         </div>
         <div class="sort-container">
           <button type="button" class="button secondary-button" value="Sort" onClick="toggleSortOptions()" id="sort-button"
@@ -50,7 +53,12 @@ if (!isset($headerClass)) {
               <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
               <span>PDF</span>
             </button>
+            <button type="button" class="assure-more-menu-item" id="assure-presets-toggle">
+              <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
+              <span>Ansichten</span>
+            </button>
           </div>
+          <?php include __DIR__ . '/subscriptions_table_presets_panel.php'; ?>
           <div class="filtermenu assure-columns-menu on-dashboard">
             <div class="filtermenu-content" id="assure-columns-panel">
               <div class="filter-title">Spalten anzeigen</div>

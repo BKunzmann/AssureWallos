@@ -118,4 +118,10 @@
       <i class="fa-solid fa-times-circle"></i> <?= translate("clear", $i18n) ?>
     </div>
   </div>
+
+  <?php // START ASSUREWALLOS MOD
+  if (!empty($assure_include_table_filter_extra)) {
+      include __DIR__ . '/insurance/ui/subscriptions_table_filters_extra.php';
+  }
+  // END ASSUREWALLOS MOD ?>
 </div>

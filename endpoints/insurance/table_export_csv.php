@@ -26,10 +26,27 @@ $loaded = Ins_Subscriptions_Table_Bootstrap::insLoad(
     $members,
     $cycles,
     $currencies,
-    (int) $mainCurrencyId
+    (int) $mainCurrencyId,
+    $columnIds
 );
 
-$csv = Ins_Subscriptions_Table_Data::insRowsToCsv($loaded['displayRows'], $columnIds);
+$exportIds = isset($_GET['ids']) ? array_filter(array_map('intval', explode(',', (string) $_GET['ids']))) : [];
+$blocks = $loaded['renderBlocks'];
+if ($exportIds !== []) {
+    $blocks = array_values(array_filter($blocks, static function (array $block) use ($exportIds): bool {
+        if (($block['type'] ?? '') !== 'data' || !isset($block['row']['id'])) {
+            return ($block['type'] ?? '') === 'group_header' || ($block['type'] ?? '') === 'group_sum';
+        }
+
+        return in_array((int) $block['row']['id'], $exportIds, true);
+    }));
+}
+
+$csv = Ins_Subscriptions_Table_Data::insRowsToCsv(
+    $loaded['displayRows'],
+    $columnIds,
+    $blocks
+);
 $filename = 'assurewallos-vertraege-' . date('Y-m-d') . '.csv';
 
 header('Content-Type: text/csv; charset=UTF-8');
